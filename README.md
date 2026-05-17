@@ -20,6 +20,10 @@
 - **⬇ 匯出 / ⬆ 匯入 JSON**：穩陣備份；資料多到連結過長時用呢個。
 - 加主畫面（iPhone Safari 分享鍵）後係 standalone PWA，第二次起**離線都開到**。
 
+## UI（Daylight Travel 設計）
+
+光亮主題（自動跟系統深/淺，戶外日光可讀）· 行程用**時間軸 timeline**（時間 rail + 連接線）· sticky **日期條** 跳日 · **今日/下一站 hero** 一眼睇下一步 · **底部 tab bar**（單手）。設計參考 Wanderlog / TripIt。資料/分享/編輯/PWA 邏輯未動，只重砌 view 層。
+
 ## 維護
 
 - 純 client-side、無 build、無後端。種子資料係 `index.html` 內 `seed()`（來自原 Excel 行程截圖），用戶改咗之後以 localStorage 為準。
