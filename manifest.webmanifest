@@ -1,0 +1,14 @@
+{
+  "name": "福岡・九州 旅遊手帳",
+  "short_name": "福岡手帳",
+  "description": "福岡/九州自由行旅遊手帳：行程、開支、連結、打包，可編輯、離線可用。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0e1117",
+  "theme_color": "#0e1117",
+  "lang": "zh-Hant",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
