@@ -232,41 +232,67 @@ function seed(){return {
   start:"2026-06-15", end:"2026-06-20",
   rate:0.052,                       // JPY → HKD（可改）
   days:[
-   {date:"2026-06-15",title:"天神 / 博多",items:[
+   {date:"2026-06-15",title:"天神 / 博多（室內為主）",items:[
      {id:uid(),time:"",name:"博多丸井(0101)百貨 2樓",kind:"spot",
       loc:"博多マルイ 福岡市博多区博多駅中央街9-1",
-      info:"交通：博多車站(博多口)\n營業：10:00–21:00，無定休\n（Excel 上一截，日子可自行調整）",
+      info:"交通：博多車站(博多口)\n營業：約 10:00–21:00（行前以官網為準）\n📋 Philips：丸井仍營業，但「2樓內容」無一年內具體 source、未能證實；若 6/15 係香港→福岡到埗日，落機入境後實際只剩半日 → 建議當日只排天神/博多步行可達室內點。",
+      cost:"",cur:"JPY",done:false},
+     {id:uid(),time:"",name:"ONE FUKUOKA BLDG.（天神ワンビル）",kind:"spot",
+      loc:"ONE FUKUOKA BLDG 福岡市中央区天神1-11-1",
+      info:"📋 Philips 建議（新增）：2025-04-24 開業新地標，B2–4F 約130店、逾6成九州初出店，含酒店；室內、雨天友好，啱到埗日／梅雨。\nsource: tenjinsite 2025 / fashion-press 2025",
       cost:"",cur:"JPY",done:false}]},
    {date:"2026-06-16",title:"THE OUTLETS KITAKYUSHU 北九州",items:[
      {id:uid(),time:"",name:"THE OUTLETS KITAKYUSHU 北九州",kind:"spot",
-      loc:"福岡県北九州市八幡東区東田4丁目1番1号",
-      info:"交通：スペースワールド駅(太空世界站)步行5分鐘\n博多站可搭 JR『鹿兒島本線區間快速(門司港行)』一班直達\n營業：10:00~20:00（美食街、餐廳可能不同）",
+      loc:"ジ アウトレット北九州 福岡県北九州市八幡東区東田4丁目1番1号",
+      info:"交通：JRスペースワールド駅徒歩約2分（舊 Space World 跡地）\n博多→需轉乘（小倉/門司方向），單程約1小時+\n營業：10:00–20:00\n📋 Philips：營業時間已用官網確認(2026-05)；⚠️ 6/16 與 6/17 連兩日遠程，體力負荷高，可考慮中間插一日輕鬆行程緩衝。",
+      cost:"",cur:"JPY",done:false},
+     {id:uid(),time:"",name:"門司港レトロ（可選串連）",kind:"spot",
+      loc:"門司港レトロ 北九州市門司区港町",
+      info:"📋 Philips 建議（可選）：同北九州、JR可達，西洋復古港町＋九州鉄道記念館（室內）。⚠️ 觀光列車「潮風号」平日不行，6/16 係星期二搭唔到，只可徒歩散策。source: 平成筑豊鉄道 2025–2026 運行表",
       cost:"",cur:"JPY",done:false}]},
-   {date:"2026-06-17",title:"由布院",items:[
-     {id:uid(),time:"",name:"由布院",kind:"spot",loc:"由布院 大分県由布市湯布院町",
-      info:"來往福岡交通：JR由布院之森/由布 約2hr15；高速巴士湯布院號 約2hr30(要預約)；或 博多車站3樓巴士",
-      cost:"3000",cur:"JPY",done:false}]},
+   {date:"2026-06-17",title:"由布院（梅雨＋預約風險高）",items:[
+     {id:uid(),time:"10:11→12:27",name:"ゆふいんの森1号 博多→由布院",kind:"move",
+      loc:"博多駅",
+      info:"📋 Philips（重要）：ゆふいんの森全車指定席，乘車日「1個月前 10:00」開賣，靚位常10分鐘內滿。\n👉 行前必做：約 2026-05-17 一開賣即上 JR九州ネット予約搶 6/17 去程＋回程指定席。\n搶唔到 → 改特急「ゆふ」或高速巴士「ゆふいん号」（需另預約，單程約¥3,250，2025-04改ダイヤ）。\nsource: JR九州官網 2026-05 / 西鉄・亀の井バス 2025-04",
+      cost:"",cur:"JPY",done:false},
+     {id:uid(),time:"",name:"由布院 散策（金鱗湖・湯の坪街道）",kind:"spot",
+      loc:"由布院 大分県由布市湯布院町",
+      info:"回程參考：ゆふいんの森4号 由布院 15:56→18:10，或6号 17:17→19:28。\n📋 Philips：⚠️ 6/17 高機率落喺九州北部梅雨期（2026 預測6月上旬入梅），由布院以戶外散策為主；備雨具，雨大可轉室內溫泉/足湯/美術館。\n⚠️ 當日來回車程約4.5h、停留僅約3.5h偏趕 → 認真考慮由布院過夜更穩。source: 日本気象協会2026-04-23 / ウェザーニュース2026-05-12",
+      cost:"3250",cur:"JPY",done:false}]},
    {date:"2026-06-18",title:"太宰府",items:[
      {id:uid(),time:"",name:"太宰府天滿宮",kind:"spot",loc:"太宰府天満宮 福岡県太宰府市宰府4-7-1",
-      info:"博多車站(3樓) 11號巴士 來回",cost:"1200",cur:"JPY",done:false}]},
+      info:"交通：博多バスターミナル1F「11番のりば」太宰府ライナーバス『旅人』約40分，不需預約，滿座搭下一班。\n車資：約¥610（另有¥700說法，行前以西鉄官網為準）；可買「福岡市内＋旅人 1日フリー乗車券」大人¥2,100較化算。\n📋 Philips：⚠️『令和の大改修』仮殿參拝官方公告只到「令和8年(2026)5月上旬」，6/18 已過仮殿期 → 行前必上太宰府天満宮官網確認本殿/参拝實況有無限制（一年內 source 未能鎖定本殿狀態）。雨天可配鄰接室內嘅九州国立博物館。source: 西鉄官網 / 太宰府天満宮官網 2026-05",
+      cost:"1200",cur:"JPY",done:false}]},
    {date:"2026-06-19",title:"博多運河城",items:[
      {id:uid(),time:"",name:"博多運河城 Canal City Hakata",kind:"spot",
-      loc:"キャナルシティ博多 福岡市博多区住吉1丁目2",info:"",cost:"",cur:"JPY",done:false}]},
+      loc:"キャナルシティ博多 福岡市博多区住吉1丁目2",
+      info:"📋 Philips：5F ラーメンスタジアム 2026-04-17 翻新重開（九州初出店等共8店）— 賣點，值得排。\n⚠️ East Bldg 仍施工，2026年秋先再開，6/19 一帶可能圍封。\n室內為主、雨天友好，排喺梅雨期合理。source: 日経2026-04 / 出店ウォッチ2026",
+      cost:"",cur:"JPY",done:false}]},
    {date:"2026-06-20",title:"回港",items:[
-     {id:uid(),time:"12:00",name:"前往機場",kind:"move",loc:"福岡空港 国際線ターミナル",
-      info:"Go to Airport 12:00",cost:"",cur:"JPY",done:false},
+     {id:uid(),time:"11:00–11:30",name:"前往機場（提早出發）",kind:"move",
+      loc:"福岡空港 国際線ターミナル",
+      info:"📋 Philips（已調整）：原定12:00→改 11:00–11:30 出發。福岡空港官網 2026-05-07 公告国際線保安検査最長約60分、建議起飛約3小時前到場。12:00出發配16:15起飛偏緊無緩衝。\n👉 前一晚執好行李＋web check-in。地鐵博多→福岡空港約11分，再轉国際線接駁巴士約10–15分。source: 福岡空港官網 2026-05-07",
+      cost:"",cur:"JPY",done:false},
      {id:uid(),time:"16:15–19:00",name:"HK Express 回港",kind:"fly",loc:"",
-      info:"HK Express 20/06/2026 (Sat) 16:15–19:00",cost:"",cur:"JPY",done:false}]}
+      info:"HK Express 20/06/2026 (Sat) 16:15–19:00\n📋 Philips：航線確認持續運行；確切航班時刻 single-source，行前再以 HK Express App 核對。",
+      cost:"",cur:"JPY",done:false}]}
   ],
   exp:[],
   links:[
    {id:uid(),label:"HK Express 管理預訂",url:"https://www.hkexpress.com/"},
+   {id:uid(),label:"JR九州ネット予約（ゆふいんの森指定席）",url:"https://www.jrkyushu.co.jp/trains/yufuinnomori/"},
+   {id:uid(),label:"西鉄バス 太宰府ライナー『旅人』",url:"https://www.nishitetsu.jp/bus/rosen/dazaihu_liner/"},
+   {id:uid(),label:"太宰府天満宮 官網（行前查本殿狀態）",url:"https://www.dazaifutenmangu.or.jp/"},
+   {id:uid(),label:"福岡空港 官網（保安/航班）",url:"https://www.fukuoka-airport.jp/"},
    {id:uid(),label:"福岡市交通局",url:"https://subway.city.fukuoka.lg.jp/"}
   ],
   pack:[
    {id:uid(),t:"護照 / 機票",d:false},{id:uid(),t:"日圓現金 + 信用卡",d:false},
-   {id:uid(),t:"充電器 / 轉插 / 尿袋",d:false},{id:uid(),t:"雨具",d:false},
-   {id:uid(),t:"常用藥物",d:false},{id:uid(),t:"網卡 / 漫遊",d:false}
+   {id:uid(),t:"充電器 / 轉插 / 尿袋",d:false},
+   {id:uid(),t:"雨具（📋 Philips：6/15–20 高機率梅雨期）",d:false},
+   {id:uid(),t:"常用藥物",d:false},{id:uid(),t:"網卡 / 漫遊",d:false},
+   {id:uid(),t:"📋 約5/17搶 ゆふいんの森 6/17 指定席",d:false},
+   {id:uid(),t:"📋 行前查太宰府天満宮本殿狀態",d:false}
   ]
 };}
 
@@ -517,7 +543,8 @@ function shareBar(){
     <button class="pri" data-act="share">🔗 分享連結</button>
     <button data-act="exp-json">⬇ 匯出 JSON</button>
     <button data-act="imp-json">⬆ 匯入 JSON</button>
-  </div><div class="hint">「分享連結」會複製一條含全部資料嘅網址 — 喺另一部裝置開就匯入。資料越多網址越長；想穩陣可同時用匯出 JSON 備份。</div>`;
+    <button data-act="reseed">📋 套用 Philips 更新範本</button>
+  </div><div class="hint">「分享連結」會複製一條含全部資料嘅網址 — 喺另一部裝置開就匯入。資料越多網址越長；想穩陣可同時用匯出 JSON 備份。<br>已開過此 app 而想攞 Philips 最新行程 → 撳「套用 Philips 更新範本」（會覆蓋本機，先匯出 JSON 備份你嘅編輯）。</div>`;
 }
 
 /* ---------- toast ---------- */
@@ -580,6 +607,13 @@ view.addEventListener("click",e=>{
   if(a==="share")    return shareLink();
   if(a==="exp-json") return expJSON();
   if(a==="imp-json") return impJSON();
+  if(a==="reseed"){
+    if(confirm("套用 Philips 更新範本？\n會以最新行程覆蓋本機（你之前嘅編輯會冇咗，建議先「匯出 JSON」備份）。")){
+      S=seed(); saveNow(); selDay=-1; wantScroll=true; render();
+      toast("已套用 Philips 更新範本 ✓");
+    }
+    return;
+  }
   if(a==="itog"){ S.days[di].items[ii].done=!S.days[di].items[ii].done; save(); render(); return; }
   if(a==="ptog"){ S.pack[ii].d=!S.pack[ii].d; save(); render(); return; }
   if(!edit) return;
