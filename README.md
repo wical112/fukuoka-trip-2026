@@ -22,7 +22,7 @@
 
 ## UI（Daylight Travel 設計）
 
-光亮主題（自動跟系統深/淺，戶外日光可讀）· 行程用**時間軸 timeline**（時間 rail + 連接線）· sticky **日期條** 跳日 · **今日/下一站 hero** 一眼睇下一步 · **底部 tab bar**（單手）。設計參考 Wanderlog / TripIt。資料/分享/編輯/PWA 邏輯未動，只重砌 view 層。
+光亮主題（自動跟系統深/淺，戶外日光可讀）· 行程用**時間軸 timeline**（時間 rail + 連接線）· sticky **日期條** 跳日（選中日放大＋陰影、今日永遠有橙點、兩端漸隱提示可捲）· **今日/下一站 hero** 一眼睇下一步 · hero 下**固定住宿欄**（酒店＋最近地鐵站＋一鍵導航）· **全域 press 觸感**（撳落 scale 回饋，respect reduce-motion）· **底部 tab bar**（單手）。設計參考 Wanderlog / TripIt。資料/分享/編輯/PWA 邏輯未動，只重砌 view 層。
 
 ## 維護
 
@@ -36,4 +36,4 @@
 - PNG icon（iOS 對 apple-touch-icon 偏好 PNG，現 SVG 已可用）。
 - 多行程切換（現為單一福岡行程）。
 
-資料更新：2026-05-17
+資料更新：2026-05-18

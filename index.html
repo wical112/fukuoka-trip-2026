@@ -46,6 +46,14 @@
   body{min-height:100dvh}
   a{color:var(--acc)}
   :focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:6px}
+  /* 全域 press 觸感：呢個 app 全部可按嘅都係 <button>（+新 .sgo a），一條 rule 包晒，零遺漏 */
+  button,.sgo{transition:transform .14s cubic-bezier(.2,.7,.3,1),background-color .15s,border-color .15s,box-shadow .15s;touch-action:manipulation}
+  button:active,.sgo:active{transform:scale(.95)}
+  .dpill[aria-current="true"]:active{transform:scale(1.02)}
+  @media(prefers-reduced-motion:reduce){
+    button,.sgo{transition:background-color .15s,border-color .15s}
+    button:active,.sgo:active,.dpill[aria-current="true"]:active{transform:none;filter:brightness(.93)}
+  }
   header{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 88%,transparent);
     backdrop-filter:blur(12px);border-bottom:1px solid var(--line);
     padding:calc(env(safe-area-inset-top,0px) + 11px) 14px 0}
@@ -59,19 +67,25 @@
     padding:9px 14px;cursor:pointer;min-height:40px;font-family:inherit;box-shadow:var(--shadow)}
   .mode.on{background:var(--acc);border-color:var(--acc);color:#fff}
   .dstrip{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;
-    padding:0 0 10px;margin:0 -2px}
+    padding:5px 2px 13px;margin:0 -2px;
+    -webkit-mask:linear-gradient(90deg,transparent,#000 18px,#000 calc(100% - 18px),transparent);
+    mask:linear-gradient(90deg,transparent,#000 18px,#000 calc(100% - 18px),transparent)}
   .dstrip::-webkit-scrollbar{display:none}
   .dpill{flex:0 0 auto;border:1px solid var(--line);background:var(--panel);
-    border-radius:13px;padding:7px 12px;cursor:pointer;text-align:center;
-    font-family:inherit;line-height:1.25;min-width:52px}
-  .dpill .dn{font-size:14px;font-weight:800;color:var(--txt)}
-  .dpill .dw{font-size:10px;font-weight:700;color:var(--mut)}
-  .dpill[aria-current="true"]{background:var(--acc);border-color:var(--acc)}
+    border-radius:14px;padding:8px 13px;cursor:pointer;text-align:center;
+    font-family:inherit;line-height:1.2;min-width:58px;min-height:50px;
+    display:flex;flex-direction:column;justify-content:center;gap:2px;position:relative}
+  .dpill .dn{font-size:16px;font-weight:800;color:var(--txt)}
+  .dpill .dw{font-size:10.5px;font-weight:700;color:var(--mut)}
+  .dpill[aria-current="true"]{background:var(--acc);border-color:var(--acc);
+    transform:scale(1.06);box-shadow:var(--shadow);z-index:1}
   .dpill[aria-current="true"] .dn,.dpill[aria-current="true"] .dw{color:#fff}
-  .dpill.istoday{border-color:var(--now)}
+  .dpill.istoday::after{content:"";position:absolute;bottom:5px;left:50%;
+    transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--now)}
   .dpill.istoday .dn{color:var(--now)}
   .dpill[aria-current="true"].istoday{background:var(--now);border-color:var(--now)}
-  .dpill[aria-current="true"].istoday .dn{color:#fff}
+  .dpill[aria-current="true"].istoday .dn,.dpill[aria-current="true"].istoday .dw{color:#fff}
+  .dpill[aria-current="true"].istoday::after{display:none}
   main{padding:14px 13px calc(86px + var(--safe-b))}
   .hero{background:linear-gradient(135deg,var(--acc),var(--acc-b));color:#fff;
     border-radius:18px;padding:15px 16px;margin:0 0 16px;box-shadow:var(--shadow)}
@@ -82,6 +96,14 @@
   .hero .hgo{display:inline-block;margin-top:11px;background:rgba(255,255,255,.22);
     color:#fff;border:0;font-weight:800;font-size:12.5px;padding:8px 15px;
     border-radius:999px;cursor:pointer;font-family:inherit}
+  .stay{display:flex;align-items:center;gap:9px;background:var(--panel);
+    border:1px solid var(--line);border-radius:14px;padding:10px 13px;
+    margin:0 0 16px;box-shadow:var(--shadow);font-size:12.5px}
+  .stay .si{font-size:17px;flex:0 0 auto;line-height:1}
+  .stay .sm{flex:1;min-width:0;line-height:1.35;color:var(--txt);font-weight:700}
+  .stay .sm small{display:block;color:var(--mut);font-weight:600;font-size:11px;margin-top:1px}
+  .stay .sgo{flex:0 0 auto;background:var(--acc-soft);color:var(--acc);font-weight:800;
+    font-size:12px;padding:8px 12px;border-radius:999px;text-decoration:none;white-space:nowrap}
   .day{background:var(--panel);border:1px solid var(--line);border-radius:18px;
     padding:14px 15px;margin:0 0 14px;box-shadow:var(--shadow);scroll-margin-top:128px}
   .day.today{border-color:var(--now)}
@@ -229,14 +251,33 @@ const KEY="fukuoka2026", EKEY="fukuoka2026_edit";
 /* ---------- 種子資料（來自 Excel 行程截圖，可自由改）---------- */
 function seed(){return {
   title:"福岡・九州 旅遊手帳",
-  start:"2026-06-15", end:"2026-06-20",
+  start:"2026-06-13", end:"2026-06-20",
+  hotel:{name:"福岡蒙特埃馬納酒店",addr:"福岡市中央区渡辺通3-4-24",tel:"81-92-7357111",
+    stations:["渡辺通駅 步行207m","天神南駅 步行490m","西鉄福岡(天神)駅 步行740m"]},
   rate:0.052,                       // JPY → HKD（可改）
   days:[
-   {date:"2026-06-15",title:"天神 / 博多（室內為主）",items:[
-     {id:uid(),time:"",name:"博多丸井(0101)百貨 2樓",kind:"spot",
-      loc:"博多マルイ 福岡市博多区博多駅中央街9-1",
-      info:"交通：博多車站(博多口)\n營業：約 10:00–21:00（行前以官網為準）\n📋 Philips：丸井仍營業，但「2樓內容」無一年內具體 source、未能證實；若 6/15 係香港→福岡到埗日，落機入境後實際只剩半日 → 建議當日只排天神/博多步行可達室內點。",
+   {date:"2026-06-13",title:"天神（到埗半日）",items:[
+     {id:uid(),time:"10:55-15:20",name:"HK Express 抵福岡",kind:"fly",loc:"福岡空港 国際線ターミナル",
+      info:"HK Express 13/06/2026 10:55–15:20。落機過關提行李＋入市區，實際只剩半日 → 當日只排天神步行可達室內點，唔好排遠程。",
       cost:"",cur:"JPY",done:false},
+     {id:uid(),time:"",name:"天神 散策（渡辺通酒店一帶）",kind:"spot",
+      loc:"福岡市中央区天神",
+      info:"住宿渡辺通駅步行可達；天神地下街／PARCO／ソラリア 等室內點，啱到埗日輕鬆行＋執行李。",
+      cost:"",cur:"JPY",done:false}]},
+   {date:"2026-06-14",title:"Moff動物咖啡＋寶可夢中心",items:[
+     {id:uid(),time:"",name:"Moff Animal Café（ららぽーと福岡）",kind:"food",
+      loc:"Moff Animal Cafe ららぽーと福岡4F 福岡市博多区那珂6-23-1",
+      info:"動物咖啡館。交通：JR鹿兒島本線「竹下」站步行約9分。",
+      cost:"",cur:"JPY",done:false},
+     {id:uid(),time:"",name:"三井 LaLaport 福岡",kind:"spot",
+      loc:"ららぽーと福岡 福岡市博多区那珂6-23-1",
+      info:"大型購物中心，同 Moff 同一棟。交通：博多／天神搭巴士可達；或西鉄大牟田線「大橋」站直達巴士約每15分一班，單程¥220。",
+      cost:"",cur:"JPY",done:false},
+     {id:uid(),time:"",name:"Pokemon Center 福岡",kind:"spot",
+      loc:"博多マルイ(0101) 福岡市博多区博多駅中央街9-1 2F",
+      info:"博多丸井(0101)百貨 2樓。交通：博多車站（博多口）。營業：10:00–21:00，無定休。",
+      cost:"",cur:"JPY",done:false}]},
+   {date:"2026-06-15",title:"天神 / 博多（室內為主）",items:[
      {id:uid(),time:"",name:"ONE FUKUOKA BLDG.（天神ワンビル）",kind:"spot",
       loc:"ONE FUKUOKA BLDG 福岡市中央区天神1-11-1",
       info:"📋 Philips 建議（新增）：2025-04-24 開業新地標，B2–4F 約130店、逾6成九州初出店，含酒店；室內、雨天友好，啱到埗日／梅雨。\nsource: tenjinsite 2025 / fashion-press 2025",
@@ -244,7 +285,7 @@ function seed(){return {
    {date:"2026-06-16",title:"THE OUTLETS KITAKYUSHU 北九州",items:[
      {id:uid(),time:"",name:"THE OUTLETS KITAKYUSHU 北九州",kind:"spot",
       loc:"ジ アウトレット北九州 福岡県北九州市八幡東区東田4丁目1番1号",
-      info:"交通：JRスペースワールド駅徒歩約2分（舊 Space World 跡地）\n博多→需轉乘（小倉/門司方向），單程約1小時+\n營業：10:00–20:00\n📋 Philips：營業時間已用官網確認(2026-05)；⚠️ 6/16 與 6/17 連兩日遠程，體力負荷高，可考慮中間插一日輕鬆行程緩衝。",
+      info:"交通：JRスペースワールド駅(太空世界站)步行約5分。博多站搭JR鹿兒島本線『區間快速(門司港行)』一車直達太空世界站，免轉乘。\n營業：10:00–20:00\n📋 Philips：營業時間已用官網確認(2026-05)；⚠️ 6/16 與 6/17 連兩日遠程，體力負荷高，可考慮中間插一日輕鬆行程緩衝。",
       cost:"",cur:"JPY",done:false},
      {id:uid(),time:"",name:"門司港レトロ（可選串連）",kind:"spot",
       loc:"門司港レトロ 北九州市門司区港町",
@@ -289,7 +330,7 @@ function seed(){return {
   pack:[
    {id:uid(),t:"護照 / 機票",d:false},{id:uid(),t:"日圓現金 + 信用卡",d:false},
    {id:uid(),t:"充電器 / 轉插 / 尿袋",d:false},
-   {id:uid(),t:"雨具（📋 Philips：6/15–20 高機率梅雨期）",d:false},
+   {id:uid(),t:"雨具（📋 Philips：6/13–20 高機率梅雨期）",d:false},
    {id:uid(),t:"常用藥物",d:false},{id:uid(),t:"網卡 / 漫遊",d:false},
    {id:uid(),t:"📋 約5/17搶 ゆふいんの森 6/17 指定席",d:false},
    {id:uid(),t:"📋 行前查太宰府天満宮本殿狀態",d:false}
@@ -455,7 +496,7 @@ function viewTrip(){
         <button class="mini del" data-act="ddel" data-d="${di}" aria-label="刪除此日">✕ 刪此日</button></div>`:""}
     </div>`;
   }).join("");
-  return heroHTML() + days +
+  return heroHTML() + stayHTML() + days +
     (edit?`<button class="add big" data-act="dadd">＋ 加一日</button>`:"") +
     shareBar();
 }
@@ -473,6 +514,17 @@ function heroHTML(){
     <div class="ht">${esc(d.title||"（未命名）")}</div>
     <div class="hn">📍 ${nstr}</div>
     <button class="hgo" data-go="${idx}">睇呢日 ↓</button></div>`;
+}
+function stayHTML(){
+  if(edit) return "";
+  const h=S.hotel;
+  if(!h||!h.name) return "";
+  const q=h.addr||h.name;
+  const st=(h.stations&&h.stations[0])?esc(h.stations[0]):"";
+  const tel=h.tel?" · ☎ "+esc(h.tel):"";
+  return `<div class="stay"><span class="si">🏨</span>
+    <div class="sm">${esc(h.name)}<small>${st}${tel}</small></div>
+    <a class="sgo" href="${esc(mapA(q))}" target="_blank" rel="noopener">導航</a></div>`;
 }
 
 function viewExp(){
