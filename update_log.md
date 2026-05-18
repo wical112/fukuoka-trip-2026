@@ -1,5 +1,13 @@
 # 更新日誌 — 福岡・九州 旅遊手帳
 
+## 2026-05-18（後續）— 搬去自訂 domain
+
+- 新增 `CNAME` → `fukuoka.wicalyu.com`（GitHub Pages 自訂 subdomain）。
+- `index.html` og:url / og:image 由 `wical112.github.io/fukuoka-trip-2026/` 改為 `https://fukuoka.wicalyu.com/`。
+- sw.js VERSION `v4` → `v5`（index.html 有改動，強制刷 PWA cache）。
+- PWA 用相對路徑（`./`），搬去 subdomain root 不受影響。
+- 待辦：GoDaddy 加 CNAME `fukuoka` → `wical112.github.io`，GitHub Pages 設 custom domain + Enforce HTTPS。
+
 ## 2026-05-18
 
 主公提供新 Excel 行程 source（HK Express 13/06 出發、福岡蒙特埃馬納酒店、13–16/06 細節），對齊 live app。
