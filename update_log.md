@@ -1,5 +1,11 @@
 # 更新日誌 — 福岡・九州 旅遊手帳
 
+## 2026-05-18（後續 2）— 安全 meta（Lucy 安全方案 T2-2）
+
+- `<head>` 加 `<meta name="robots" content="noindex">`（charter: unlisted）+ `<meta name="referrer" content="no-referrer">`。
+- 分享連結用 `#hash` fragment（已確認正確，唔經 Referer 洩漏，無需改）。
+- sw.js `VERSION v5→v6`（index.html 有改動，強制刷 PWA cache）。
+
 ## 2026-05-18（後續）— 搬去自訂 domain
 
 - 新增 `CNAME` → `fukuoka.wicalyu.com`（GitHub Pages 自訂 subdomain）。
