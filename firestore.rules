@@ -1,6 +1,9 @@
 rules_version = '2';
-// 福岡手帳 cloud — M2 Step A 草案。
-// ⚠️ Security-sensitive：authz model 待 Lucy review（鐵律五），未當 production-secure。
+// 福岡手帳 cloud — capability-URL 模型（Lucy 2026-05-19 review，主公接受 B）。
+// ⚠️ 安全姿態：tripId = acknowledged secret；有 invite link = 永久全權、無 revoke
+//   （主公明確風險接受：家庭低敏感、6/13 死線）。雲端當 convenience，JSON 匯出=真備份。
+// F8 已修：createdBy 建後 immutable + migrated 單向 false→true，防 trip 騎劫 / migration 覆蓋。
+// ⏳ coupled-to-client（#13 一齊 land，未做唔好拆開 deploy）：F1 刪假 token、F5 收 invites、F6 state schema/size 驗。
 // 模型：membership-gated。trip 下所有 subcollection 只限 member 讀寫。
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -16,7 +19,12 @@ service cloud.firestore {
     match /trips/{tripId} {
       // 任何登入者可建 trip（建後即寫自己 member doc 成為 member）
       allow create: if signedIn();
-      allow read, update, delete: if isMember(tripId);
+      allow read, delete: if isMember(tripId);
+      // F8: member 可 update，但 createdBy 建後 immutable、migrated 只可 false→true
+      //     （防 join 者改 createdBy 騎劫 / 重置 migrated 用自己資料覆蓋成個 trip）
+      allow update: if isMember(tripId)
+        && request.resource.data.createdBy == resource.data.createdBy
+        && (resource.data.migrated == false || request.resource.data.migrated == true);
 
       match /members/{uid} {
         allow read: if isMember(tripId);
