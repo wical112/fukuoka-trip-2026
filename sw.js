@@ -1,7 +1,7 @@
 /* 福岡旅遊手帳 — service worker
    App shell precache → 第二次起離線即開。資料係 localStorage，唔經 SW。
    改 code 後一定要 bump VERSION，否則 PWA 用戶食 cache 舊版。 */
-const VERSION = "v10-2026-05-19";
+const VERSION = "v11-2026-05-19";
 const SHELL = "shell-" + VERSION;
 const URLS = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
 

@@ -1,5 +1,13 @@
 # 更新日誌 — 福岡・九州 旅遊手帳
 
+## 2026-05-19（後續4）— 雲端共享 UX 成品（取代 stopgap）
+
+- **成品**：bottom-sheet 共享 UX 取代舊 confirm/prompt stopgap。涵蓋：開共享/經連結加入(顯示名)/複製邀請連結+常駐「永久全權收唔返」誠實告知/成員 live 列表(無造假權限)/「重開新行程換 ID」逃生門(capability 唯一 de-facto revoke)/離開共享/JSON 匯出 prominence + 「雲端非備份」提示。
+- 同步狀態：header pill（同步中/已同步/離線）+ 離線 persistent banner（reassure 非 error）+ 同行者改動 toast；online/offline listener；cloudPersist/startCloudSync/cloudBoot 已 wire。
+- 新控件全繼承全域 button press primitive；sheet 有 Esc/backdrop 關 + focus + reduced-motion。
+- **Scope 誠實**：多行程切換器(B2) 明確不做（行程得福岡一個、非 6/13 必需），唔係靜雞雞 drop。
+- 驗證：node --check PASS；18 個 cloud fn identifier 全在；seed 無回歸(8日)；cloud rules 早前已 live 驗證。⚠️ 視覺/觸感/2-機同步實際操作 **本環境無 browser 驗唔到 → 墨子 #14 真機**（非 stub，係完整實作待真機收貨）。sw v10→v11。
+
 ## 2026-05-19（後續3）— LIVE check：F6 delete 缺陷修正
 
 - **Live headless 驗證**（真 anon signUp + 直打 live Firestore）：F1 capability / F5 invites-deny / F6 section 白名單 / F8 createdBy-immutable + 正常可改 title + 無 world-list(F7) — **全部 live 守到**。Anon Auth 真 work。

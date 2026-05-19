@@ -215,6 +215,56 @@
   .hide{display:none!important}
   .empty{text-align:center;color:var(--mut);padding:40px 18px;font-size:14px;line-height:1.7}
   footer{color:var(--mut);font-size:11px;text-align:center;padding:6px 16px 0;line-height:1.7}
+
+  /* ── 雲端共享 UX（成品）：bottom-sheet + 同步 pill + 離線 banner ── */
+  .csync{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);
+    transform:translateX(-50%);z-index:80;display:none;align-items:center;gap:6px;
+    background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);
+    color:var(--mut2);font-size:11.5px;font-weight:700;padding:5px 12px;border-radius:999px;
+    pointer-events:none;transition:opacity .2s}
+  .csync.on{display:inline-flex}
+  .csync .d{width:7px;height:7px;border-radius:50%;background:var(--mut);flex:none}
+  .csync[data-s="synced"] .d{background:var(--acc)} .csync[data-s="synced"]{color:var(--acc)}
+  .csync[data-s="syncing"] .d{background:var(--fly);animation:cspin 1s linear infinite}
+  .csync[data-s="offline"] .d{background:var(--now)} .csync[data-s="offline"]{color:var(--now)}
+  @keyframes cspin{to{opacity:.3}}
+  .cbanner{position:fixed;left:0;right:0;bottom:calc(76px + var(--safe-b));z-index:79;
+    margin:0 12px;background:var(--now-soft);color:var(--now);border:1px solid var(--now);
+    border-radius:12px;padding:9px 13px;font-size:12px;font-weight:700;text-align:center;
+    box-shadow:var(--shadow);display:none}
+  .cbanner.on{display:block}
+  .csheet{position:fixed;inset:0;z-index:90;display:none}
+  .csheet.on{display:block}
+  .csheet .bk{position:absolute;inset:0;background:rgba(10,15,25,.5);
+    backdrop-filter:blur(2px);animation:cfade .2s}
+  .csheet .pnl{position:absolute;left:0;right:0;bottom:0;background:var(--panel);
+    border-radius:20px 20px 0 0;padding:18px 18px calc(20px + var(--safe-b));
+    max-height:88vh;overflow:auto;box-shadow:0 -8px 30px rgba(0,0,0,.3);
+    animation:cslide .26s cubic-bezier(.2,.7,.3,1)}
+  @keyframes cfade{from{opacity:0}} @keyframes cslide{from{transform:translateY(100%)}}
+  .csheet h3{font-size:18px;font-weight:800;margin:0 0 4px;color:var(--txt)}
+  .csheet .lead{font-size:12.5px;color:var(--mut);line-height:1.6;margin:0 0 14px}
+  .csheet .grab{width:38px;height:4px;border-radius:99px;background:var(--line);
+    margin:0 auto 14px}
+  .csheet button{width:100%;font-family:inherit;font-size:14px;font-weight:800;
+    border-radius:13px;padding:13px;margin:7px 0;border:1px solid var(--line);
+    background:var(--panel2);color:var(--txt);cursor:pointer;min-height:48px}
+  .csheet button.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+  .csheet button.warn{color:var(--now);border-color:var(--now)}
+  .csheet .note{font-size:11.5px;line-height:1.6;color:var(--mut);
+    background:var(--panel2);border-radius:10px;padding:10px 12px;margin:8px 0}
+  .csheet .danger{color:var(--now);background:var(--now-soft);border:1px solid var(--now);
+    font-weight:700}
+  .csheet .mlist{margin:6px 0 2px;padding:0;list-style:none}
+  .csheet .mlist li{display:flex;align-items:center;gap:8px;font-size:13px;
+    color:var(--txt);padding:7px 0;border-bottom:1px solid var(--line)}
+  .csheet .mlist li:last-child{border-bottom:0}
+  .csheet .mlist .me{font-size:10.5px;font-weight:800;color:var(--acc);
+    background:var(--acc-soft);padding:2px 7px;border-radius:99px}
+  @media(prefers-reduced-motion:reduce){
+    .csheet .bk,.csheet .pnl{animation:none}
+    .csync[data-s="syncing"] .d{animation:none}
+  }
 </style>
 <!-- Firebase compat SDK（單檔無 build → 用 compat global `firebase`，唔使改現有 non-module script）-->
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -247,6 +297,12 @@
   <span id="meta"></span>
 </footer>
 <div class="toast" id="toast"></div>
+<div class="csync" id="csync" data-s="off" aria-live="polite"><span class="d" aria-hidden="true"></span><span id="csyncT">同步中…</span></div>
+<div class="cbanner" id="cbanner" role="status">⚠ 離線中 — 改動會喺有網時自動上傳</div>
+<div class="csheet" id="csheet" role="dialog" aria-modal="true" aria-label="共享行程">
+  <div class="bk" data-cact="close"></div>
+  <div class="pnl" id="csheetP"></div>
+</div>
 
 <script>
 /* ---------- localStorage 防爆 ---------- */
@@ -380,24 +436,30 @@ function cloudPersist(){
   if(!CLOUD || !fbAuth.currentUser) return;
   const cur=tripCtx(); if(!cur) return;
   const tid=cur.tripId;
+  let wrote=false;
   for(const k of SECT_KEYS){
     const json=JSON.stringify(SECT[k].pick(S));
     if(json===_sent[k]) continue;            // 冇變就唔寫（慳 quota + 防環）
-    _sent[k]=json;
+    _sent[k]=json; wrote=true;
     stateRef(tid,k).set(JSON.parse(json),{merge:false})
-      .catch(e=>toast("☁️ 同步寫入失敗（離線會自動補）"));   // offline persistence 會 queue
+      .then(()=>{ if(_cloudState!=="offline") setCloudState("synced"); })
+      .catch(e=>{ setCloudState("offline"); });   // offline persistence 會 queue，有網自動補
   }
+  if(wrote && _cloudState!=="offline") setCloudState("syncing");
 }
 function startCloudSync(tid){
+  const seeded={};                                  // 每 section 首次 snapshot 唔當「同行者改咗」
   SECT_KEYS.forEach(k=>{
     stateRef(tid,k).onSnapshot({includeMetadataChanges:false}, snap=>{
       if(snap.metadata.hasPendingWrites) return;   // 本機 echo，唔 re-render
-      if(!snap.exists) return;
+      if(!snap.exists){ seeded[k]=true; return; }
       const d=snap.data();
       SECT[k].put(S,d);
       _sent[k]=JSON.stringify(SECT[k].pick(S));     // 同步後 baseline，避免即刻回寫
       render();
-    }, err=>toast("☁️ 同步中斷："+(err&&err.code||"unknown")));
+      if(seeded[k]) toast("☁️ 行程已更新（同行者改咗）"); else seeded[k]=true;
+      setCloudState("synced");
+    }, err=>{ setCloudState("offline"); toast("☁️ 同步中斷："+(err&&err.code||"unknown")); });
   });
 }
 async function cloudBoot(){
@@ -408,47 +470,150 @@ async function cloudBoot(){
     await fbMigrateIfNeeded(cur.tripId);            // 只建立者會真 migrate（純函式守門）
     S=S||seed();                                    // listener 未到前有個底，避免首 render 炸
     CLOUD=true;
+    setCloudState("syncing");
     startCloudSync(cur.tripId);                     // 之後 S 由 snapshot 餵
   }catch(e){
     // offline-first：cloud 啟動失敗（網絡/config/權限）→ 退返單機，唔好白屏
-    CLOUD=false;
+    CLOUD=false; setCloudState("off");
     toast("☁️ 連唔上共享，暫用本機資料");
     load(); render();
   }
 }
-/* cloud 入口選單（功能性 stopgap：用 confirm/prompt；正式 UX 交 UU 設計 M2/M3）*/
-async function cloudMenu(){
+/* ── 雲端共享 UX 成品（bottom-sheet；取代舊 confirm/prompt stopgap）──
+   Scope：單一福岡行程嘅完整共享。多行程切換器(B2) 明確不在此範圍
+   （行程得福岡一個、非 6/13 必需）。capability-URL 模型：誠實告知無 revoke。 */
+const DNKEY="fukuoka2026_dispname";
+function dispName(){ return (lsGet(DNKEY)||"").slice(0,40); }
+function setDispName(n){ lsSet(DNKEY,(n||"").slice(0,40)); }
+let _memUnsub=null, _cloudState="off";
+function setCloudState(s){
+  _cloudState=s;
+  const p=document.getElementById("csync"), t=document.getElementById("csyncT"),
+        b=document.getElementById("cbanner");
+  if(!p) return;
+  const on = s!=="off";
+  p.classList.toggle("on",on); p.dataset.s=s;
+  if(t) t.textContent = s==="synced"?"已同步":s==="syncing"?"同步中…":s==="offline"?"離線中":"";
+  if(b) b.classList.toggle("on", s==="offline");
+}
+function copyLink(url){
+  (navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject())
+    .then(()=>toast("邀請連結已複製 ✓")).catch(()=>prompt("邀請連結（長按複製）：",url));
+}
+async function fbReshareNewTrip(){
+  // capability-URL 唯一「收回」做法：開新 trip + 搬資料入去，舊連結即廢
+  const nm=dispName()||askName(); if(!nm){ toast("已取消"); return; }
+  setDispName(nm);
+  toast("開緊新行程…");
+  const {tripId}=await fbCreateTrip(nm);            // 設 createdBy=我, migrated:false
+  await fbMigrateIfNeeded(tripId);                  // 我係 creator → 本機 S 搬入新 trip
+  CLOUD=true; _sent={}; startCloudSync(tripId);
+  copyLink(fbInviteUrl(tripId));
+  toast("已換新行程＋新連結 ✓ 舊連結即時失效");
+  renderCloudSheet();
+}
+function closeCloudSheet(){ const s=document.getElementById("csheet"); if(s) s.classList.remove("on"); }
+function renderCloudSheet(){
+  const P=document.getElementById("csheetP"); if(!P) return;
+  const cur=tripCtx();
   if(!fbConfigured()){
-    alert("☁️ 共享行程未啟用：開發者要先填 Firebase 設定（FB_CFG）。\n而家照用單機版，資料存喺本機。");
+    P.innerHTML=`<div class="grab"></div><h3>☁️ 共享行程</h3>
+      <div class="note danger">未啟用：開發者要先填 Firebase 設定。而家照用單機版，資料喺本機，「分享連結」一樣可跨機。</div>
+      <button data-cact="close">知道喇</button>`; return;
+  }
+  if(cur && cur.fromLink){            // 由邀請連結入嚟、未 join
+    P.innerHTML=`<div class="grab"></div><h3>加入共享行程？</h3>
+      <p class="lead">加入後你<b>都可以改／刪</b>呢個行程，同行者即時見到。</p>
+      <input id="cnm" class="ttl" style="border:1px solid var(--line);border-radius:11px;padding:11px;width:100%;font-size:16px;margin-bottom:4px" placeholder="你嘅顯示名（同行者會見到）" value="${dispName()}">
+      <button class="pri" data-cact="join">加入</button>
+      <button data-cact="close">唔加入，淨係睇單機</button>`; return;
+  }
+  if(cur && !cur.fromLink){           // 已 join cloud trip
+    P.innerHTML=`<div class="grab"></div><h3>☁️ 共享行程進行中</h3>
+      <p class="lead">改動會自動同步畀所有成員。狀態：<b id="cst">${_cloudState==="synced"?"已同步":_cloudState==="offline"?"離線（會自動補）":"同步中…"}</b></p>
+      <div class="note danger">⚠️ 邀請連結＝<b>永久通行證</b>：任何攞到嘅人可改／刪呢個行程，<b>收唔返</b>。只發畀信得過嘅同行者。連結萬一外洩 → 用下面「重開新行程」換新連結（舊即失效）。</div>
+      <button class="pri" data-cact="copy">📋 複製邀請連結</button>
+      <div style="font-size:11px;color:var(--mut);text-align:center;margin:-2px 0 8px">連結無得單獨收回，只能整體重開</div>
+      <div style="font-weight:800;font-size:13px;margin:12px 0 2px;color:var(--txt)">成員</div>
+      <ul class="mlist" id="cmem"><li style="color:var(--mut)">載入中…</li></ul>
+      <div class="note">💾 <b>雲端係方便，唔係備份。</b>定期撳下面「匯出 JSON」存一份至穩陣（萬一帳號／連結出事都有底）。</div>
+      <button data-cact="export">⬇ 匯出 JSON 備份（建議定期做）</button>
+      <button class="warn" data-cact="reshare">🔄 連結洩漏咗？重開新行程（換新連結）</button>
+      <button class="warn" data-cact="leave">離開共享（本機資料保留）</button>
+      <button data-cact="close">收埋</button>`;
+    fbMembersBind(cur.tripId);
     return;
   }
-  const cur=tripCtx();
+  // 未有 cloud trip：開新
+  P.innerHTML=`<div class="grab"></div><h3>開共享行程</h3>
+    <p class="lead">同行者經連結加入，一齊睇同改同一份行程，跨手機即時同步。私人行程唔受影響、唔會自動上雲。</p>
+    <div class="note danger">⚠️ 開咗之後，邀請連結＝永久通行證：收到嘅人可改／刪，<b>收唔返</b>。只發畀信得過嘅同行者。</div>
+    <div class="note">💾 雲端係方便、唔係備份 — 開咗都建議定期「匯出 JSON」留底。</div>
+    <input id="cnm" class="ttl" style="border:1px solid var(--line);border-radius:11px;padding:11px;width:100%;font-size:16px;margin-bottom:4px" placeholder="你嘅顯示名（同行者會見到）" value="${dispName()}">
+    <button class="pri" data-cact="create">我明白，開共享行程</button>
+    <button data-cact="close">取消</button>`;
+}
+function fbMembersBind(tid){
+  try{ if(_memUnsub) _memUnsub(); }catch(e){}
+  if(!fbDb) return;
+  _memUnsub=fbDb.collection("trips").doc(tid).collection("members")
+    .onSnapshot(qs=>{
+      const ul=document.getElementById("cmem"); if(!ul) return;
+      const me=fbAuth.currentUser&&fbAuth.currentUser.uid;
+      const rows=[];
+      qs.forEach(d=>rows.push({uid:d.id,nm:(d.data().displayName||"（未命名）")}));
+      ul.innerHTML = rows.length? rows.map(r=>
+        `<li><span style="flex:1">${r.nm.replace(/[<>&]/g,"")}</span>${r.uid===me?'<span class="me">你</span>':""}</li>`).join("")
+        : '<li style="color:var(--mut)">仲未有其他成員</li>';
+    }, ()=>{ const ul=document.getElementById("cmem"); if(ul) ul.innerHTML='<li style="color:var(--mut)">成員載入失敗（離線？）</li>'; });
+}
+async function cloudSheetAct(act){
   try{
-    if(cur && !cur.fromLink){           // 已 join 過
-      const url=fbInviteUrl(cur.tripId);
-      if(confirm("已加入共享行程。\n撳「確定」複製邀請連結俾同行者；「取消」離開共享。\n\n⚠️ 連結＝永久通行證：任何攞到嘅人可改／刪呢個行程，收唔返。只發畀信得過嘅同行者。")){
-        (navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject())
-          .then(()=>toast("邀請連結已複製 ✓")).catch(()=>prompt("邀請連結：",url));
-      }else if(confirm("確定離開共享行程？（本機資料會保留）")){
-        fbLeaveCloud(); toast("已離開共享，回到單機"); }
-      return;
+    if(act==="close"){ closeCloudSheet(); return; }
+    if(act==="copy"){ const c=tripCtx(); if(c) copyLink(fbInviteUrl(c.tripId)); return; }
+    if(act==="export"){ closeCloudSheet(); expJSON(); return; }
+    if(act==="join"){
+      const nm=(document.getElementById("cnm").value||"").trim(); if(!nm){ toast("請先填顯示名"); return; }
+      setDispName(nm); toast("加入緊…");
+      await fbJoinByLink(tripCtx(),nm);
+      CLOUD=true; _sent={}; setCloudState("syncing"); startCloudSync(tripCtx().tripId);
+      toast("已加入共享行程 ✓"); renderCloudSheet(); return;
     }
-    if(cur && cur.fromLink){            // 由 invite link 入嚟
-      const nm=askName(); if(!nm){ toast("已取消加入"); return; }
-      await fbJoinByLink(cur,nm);
-      toast("已加入共享行程 ✓（同步功能 Step C 上線後生效）");
-      return;
-    }
-    // 未有 cloud trip：開新
-    if(confirm("開一個共享行程？同行者可經連結加入一齊編輯。\n（migration / 實時同步 Step C 上線後完整）")){
-      const nm=askName(); if(!nm){ toast("已取消"); return; }
+    if(act==="create"){
+      const nm=(document.getElementById("cnm").value||"").trim(); if(!nm){ toast("請先填顯示名"); return; }
+      setDispName(nm); toast("開緊…");
       const {tripId}=await fbCreateTrip(nm);
-      const url=fbInviteUrl(tripId);
-      (navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject())
-        .then(()=>toast("已開共享行程，邀請連結已複製 ✓")).catch(()=>prompt("邀請連結：",url));
+      await fbMigrateIfNeeded(tripId);
+      CLOUD=true; _sent={}; setCloudState("syncing"); startCloudSync(tripId);
+      copyLink(fbInviteUrl(tripId));
+      toast("已開共享行程，連結已複製 ✓"); renderCloudSheet(); return;
+    }
+    if(act==="reshare"){
+      if(!confirm("重開一個新行程？\n會將你而家嘅行程資料搬入新 trip，舊邀請連結即時失效（= 收回外洩連結唯一做法）。")) return;
+      await fbReshareNewTrip(); return;
+    }
+    if(act==="leave"){
+      if(!confirm("離開共享行程？本機會保留一份資料，之後改動唔再同步。")) return;
+      try{ if(_memUnsub) _memUnsub(); }catch(e){}
+      CLOUD=false; fbLeaveCloud(); setCloudState("off");
+      load(); render(); closeCloudSheet(); toast("已離開共享，回到單機"); return;
     }
   }catch(err){ toast("☁️ 操作失敗："+(err&&err.message||err)); }
 }
+function cloudMenu(){            // data-act="cloud" 入口 → 開 sheet
+  renderCloudSheet();
+  const s=document.getElementById("csheet"); if(s){ s.classList.add("on");
+    const f=s.querySelector("button,input"); if(f) try{f.focus();}catch(e){} }
+}
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-cact]"); if(t) cloudSheetAct(t.dataset.cact);
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){ const s=document.getElementById("csheet");
+    if(s&&s.classList.contains("on")) closeCloudSheet(); }
+});
+addEventListener("offline",()=>{ if(CLOUD) setCloudState("offline"); });
+addEventListener("online",()=>{ if(CLOUD){ setCloudState("syncing"); setTimeout(()=>{ if(CLOUD&&_cloudState!=="offline") setCloudState("synced"); },1500); } });
 const KEY="fukuoka2026", EKEY="fukuoka2026_edit";
 
 /* ---------- 種子資料（來自 Excel 行程截圖，可自由改）---------- */
