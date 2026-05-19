@@ -34,3 +34,21 @@
 S1 0101.co.jp(無日期) · S2 tenjinsite 2025 · S3 fashion-press 2025 · S4 the-outlets-kitakyushu.aeonmall.com 2026 · S5 retro-line.net 2025-26 · S6 jrkyushu.co.jp 2026-05 · S7 kyushujourney 2025 · S8 nishitetsu ゆふいん号 · S9 亀の井バス 2025-04 · S10 nishitetsu 旅人 · S11 西日本新聞 2025 · S12 太宰府天満宮 2026-05 · S14 出店ウォッチ 2026 · S15 日経 2026-04 · S16 osayama-travel 2026 · S17 fukuoka-airport(英) · S18 fukuoka-airport 2026-05-07 · S19 日本気象協会 2026-04-23 · S20 ウェザーニュース 2026-05-12 · S21 nippon.com 2025 · S22 NEWT 2026 · S23 yokanavi 2025 · S24 LEAPUP 2025-04 · S25 三井不動産 2025-11-05。
 
 _Philips · 3 pass · 25 sources · 整體 confidence 中高 · 2026-05-17_
+
+---
+
+## 📋 Philips 行前重查（2026-05-19，距原 cross-check 2 日）
+
+7 條 Gap 重查結論：
+
+| # | Gap | 結論 | Conf | Source |
+|---|---|---|---|---|
+| 1 | 博多丸井 Pokémon Center 樓層 | ✅ 確認 **博多丸井 2F**，10:00–21:00 無休（seed 本已準，驗證確認） | high | 丸井グループ PR Times・博多経済新聞・ファンファン福岡 |
+| 2 | 太宰府本殿 2026-06 | ✅ **本殿 2026-05-17 重開**（124年大改修完），仮殿~3個月解体中。已併入 6/18 seed，pack todo 釋除 | high | 日経・太宰府天満宮官網・現地確認 2026-05-17 |
+| 3 | 旅人車資 ¥610 vs ¥700 | ◑ 1-day pass ¥2,100/¥1,050 確認；單程矛盾未解 → seed 改建議直接買 pass 令矛盾 moot | pass high | 西鉄官網 ×2 |
+| 4 | 2026 入梅 | ✅ 維持（2日無變）：九州北部6月上旬入梅、雨峰6下旬-7上旬；行程在梅雨內未到峰，雨具指引照用 | med-high | 日本気象協会2026-04-23・ウェザーニュース2026-05-12・日経2026-05 |
+| 5 | HK Express 6/20 時刻 | ⚠️ booking-specific，Philips 無公開定論 → 6/20 seed 加警告「以你 booking confirmation 為準」 | gap | （無 reliable 公開 source）|
+| 6 | 由布院 金鱗湖/湯の坪街道 | ✅ 維持；可選補：金鱗湖畔シャガール美術館翻新（**未自動入行程，待主公決定加唔加邊日**）| med | るるぶ&more.・まっぷる |
+| 7 | teamLab 福岡 | ✅ teamLab Forest 福岡（BOSS E・ZO，常設）仍營運+2026-03-20 恐竜新作（**未自動入行程，可選博多區點，待主公決定 placement**）| med | よかなび・JRおでかけ・TEAPOT MAGAZINE 2026 |
+
+已採納併入 seed()：#2（太宰府本殿）、#3（pass 建議）、#5（HK Express 警告）、#1/#4 驗證確認原內容無需改。**待主公決定**：#6 美術館、#7 teamLab Forest（屬要揀邊日插入嘅 optional 加項，gap-first 未自動塞）。

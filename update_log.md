@@ -1,5 +1,14 @@
 # 更新日誌 — 福岡・九州 旅遊手帳
 
+## 2026-05-19（後續2）— 內容定稿：Philips 行前 7-gap 重查
+
+- 太宰府本殿釋疑：seed 6/18 改「本殿 2026-05-17 已重開、大改修完」，pack「行前查本殿」todo 釋除（✅ d:true）。
+- 太宰府車資：改建議直接買 1-day pass ¥2,100，免單程 ¥610/¥700 之爭。
+- HK Express 6/20：加 ⚠️「以你 booking confirmation 為準」警告（single-source）。
+- Pokémon Center 2F / 入梅指引：Philips 驗證確認原內容準確，無需改。
+- 待主公決定 placement（gap-first 未自動入行程）：teamLab Forest 福岡、由布院シャガール美術館翻新。
+- PHILIPS_CROSSCHECK.md ledger 已補 2026-05-19 重查表。sw v9→v10。
+
 ## 2026-05-19（後續）— #13 capability-URL 重構 + Lucy F1/F4/F5/F6
 
 - **F1**：刪走假 invite token（`fbNewToken` 移除、create/join 唔再寫/讀 invites doc）；tripId(20-char 不可猜)=唯一 capability secret，rules 本來就係咁。
