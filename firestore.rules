@@ -1,0 +1,52 @@
+rules_version = '2';
+// 福岡手帳 cloud — M2 Step A 草案。
+// ⚠️ Security-sensitive：authz model 待 Lucy review（鐵律五），未當 production-secure。
+// 模型：membership-gated。trip 下所有 subcollection 只限 member 讀寫。
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isMember(tripId) {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/trips/$(tripId)/members/$(request.auth.uid));
+    }
+
+    match /trips/{tripId} {
+      // 任何登入者可建 trip（建後即寫自己 member doc 成為 member）
+      allow create: if signedIn();
+      allow read, update, delete: if isMember(tripId);
+
+      match /members/{uid} {
+        allow read: if isMember(tripId);
+        // 只可以建/改/刪自己嗰份 member（join = 寫自己）
+        allow create, update, delete: if signedIn() && request.auth.uid == uid;
+      }
+
+      // invite token：登入者可讀（join 前要驗 token），只 member 可發/改
+      match /invites/{token} {
+        allow read: if signedIn();
+        allow write: if isMember(tripId);
+      }
+
+      // C3 per-section state docs（M2 實際用緊呢個）：itinerary/expenses/packing/meta
+      match /state/{section} {
+        allow read, write: if isMember(tripId);
+      }
+
+      // 以下 per-item 結構 = phase-2 normalize 先用（M3 完整 branch 之後）
+      match /days/{dayId} {
+        allow read, write: if isMember(tripId);
+        match /branches/{branchId} {
+          allow read, write: if isMember(tripId);
+          match /items/{itemId} {
+            allow read, write: if isMember(tripId);
+          }
+        }
+      }
+      match /expenses/{expId}  { allow read, write: if isMember(tripId); }
+      match /packing/{packId}  { allow read, write: if isMember(tripId); }
+    }
+  }
+}

@@ -216,6 +216,10 @@
   .empty{text-align:center;color:var(--mut);padding:40px 18px;font-size:14px;line-height:1.7}
   footer{color:var(--mut);font-size:11px;text-align:center;padding:6px 16px 0;line-height:1.7}
 </style>
+<!-- Firebase compat SDK（單檔無 build → 用 compat global `firebase`，唔使改現有 non-module script）-->
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <header>
@@ -248,6 +252,202 @@
 /* ---------- localStorage 防爆 ---------- */
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+
+/* ========== Firebase 整合層（M2 Step A）==========
+   設計：lazy + dormant。Cloud mode 只喺 (config 已填) 先可能啟動；
+   未啟動時 = 現有單機 localStorage 行為，完全唔變（zero-break）。
+   load()/save()/boot 一行都冇郁；join flow / migration 係 M2 Step B/C。
+   ⚠️ 主公：去 Firebase Console 開 project → 加 Web app → 將 config 貼落 FB_CFG。 */
+const TRIPKEY="fukuoka2026_trip";   // {tripId, token?} — 已 join 嘅 cloud trip
+const FB_CFG = {
+  apiKey:"__FILL_ME__", authDomain:"__FILL_ME__", projectId:"__FILL_ME__",
+  storageBucket:"__FILL_ME__", messagingSenderId:"__FILL_ME__", appId:"__FILL_ME__"
+};
+function fbConfigured(){ return FB_CFG.apiKey && !FB_CFG.apiKey.startsWith("__"); }
+/* 有冇 cloud trip context：URL #join=token&t=tripId 或 之前 join 過 */
+function tripCtx(){
+  const h=new URLSearchParams(location.hash.slice(1));
+  const q=new URLSearchParams(location.search);
+  const tripId=h.get("t")||q.get("t");
+  const token=h.get("join")||q.get("join");
+  if(tripId) return {tripId, token:token||null, fromLink:true};
+  try{ const s=lsGet(TRIPKEY); if(s) return {...JSON.parse(s), fromLink:false}; }catch(e){}
+  return null;
+}
+/* Step A 只保證：cloud 唔會誤啟動。join UI 未做 → 一律行返單機。 */
+function cloudShouldActivate(){ return fbConfigured() && !!tripCtx(); }
+let fbApp=null, fbAuth=null, fbDb=null;
+async function fbInit(){
+  if(fbApp) return;
+  if(!fbConfigured()) throw new Error("Firebase config 未填（FB_CFG）");
+  fbApp=firebase.initializeApp(FB_CFG);
+  fbAuth=firebase.auth();
+  fbDb=firebase.firestore();
+  try{ await fbDb.enablePersistence({synchronizeTabs:true}); }
+  catch(e){ console.warn("[fb] offline persistence 唔開到:", e&&e.code); }  // multi-tab / 不支援 → 退化做 online-only，唔 fatal
+}
+async function fbSignIn(){
+  await fbInit();
+  const cred=await fbAuth.signInAnonymously();
+  return cred.user;          // anonymous uid = membership identity（M1 定）
+}
+/* ----- M2 Step B：join / identity / invite -----
+   只 establish cloud session + membership + 邀請 token。
+   ⚠️ 重要：呢步【唔接】realtime listener / 唔改 render()/save() →
+   建咗 trip 都仲係單機畫面，「見到同步」係 Step C(C3 per-section sync)。
+   未 join = 現單機完全不變（zero-break 保持）。 */
+function fbNewToken(){
+  const a=new Uint8Array(16);
+  (crypto.getRandomValues?crypto:window.crypto).getRandomValues(a);
+  return [...a].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+function askName(){
+  const n=(prompt("你喺個共享行程嘅顯示名（同行者會見到，例：阿明）：","")||"").trim();
+  return n.slice(0,40);   // 上限防爆；空 = 取消
+}
+/* 建新共享 trip（migration S→cloud 係 Step C，呢度只開空 trip + 自己做 member）*/
+async function fbCreateTrip(displayName){
+  await fbSignIn();
+  const uid=fbAuth.currentUser.uid;
+  const ref=fbDb.collection("trips").doc();
+  const tripId=ref.id, token=fbNewToken();
+  const ts=firebase.firestore.FieldValue.serverTimestamp();
+  const batch=fbDb.batch();
+  batch.set(ref,{title:(S&&S.title)||"我嘅行程",createdBy:uid,createdAt:ts,
+    schema:"c3",migrated:false});                       // migrated:false → Step C 先 import S
+  batch.set(ref.collection("members").doc(uid),{displayName,joinedAt:ts});
+  batch.set(ref.collection("invites").doc(token),{createdBy:uid,createdAt:ts});
+  await batch.commit();
+  lsSet(TRIPKEY,JSON.stringify({tripId,token}));
+  return {tripId,token};
+}
+/* 經 invite link 加入（ctx 來自 tripCtx()）*/
+async function fbJoinByLink(ctx,displayName){
+  await fbSignIn();
+  const uid=fbAuth.currentUser.uid;
+  const tref=fbDb.collection("trips").doc(ctx.tripId);
+  if(ctx.token){
+    const inv=await tref.collection("invites").doc(ctx.token).get();
+    if(!inv.exists) throw new Error("邀請連結無效或已失效");
+  }
+  await tref.collection("members").doc(uid).set(
+    {displayName,joinedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+  lsSet(TRIPKEY,JSON.stringify({tripId:ctx.tripId,token:ctx.token||null}));
+  return {tripId:ctx.tripId};
+}
+function fbInviteUrl(tripId,token){
+  return location.origin+location.pathname+"?t="+tripId+"#join="+token;
+}
+function fbLeaveCloud(){ try{localStorage.removeItem(TRIPKEY);}catch(e){} }
+
+/* ----- M2 Step C：C3 per-section 實時同步 + idempotent migration -----
+   4 個 section doc：itinerary(days) / expenses(exp) / packing(pack) / meta。
+   單機 path 行為位元級不變（saveNow 只係前面加 CLOUD guard）。 */
+let CLOUD=false, _sent={};                 // _sent[sec]=最後送出 JSON（dirty-compare + echo 防環）
+const SECT={
+  itinerary:{ pick:s=>({days:s.days||[]}),                 put:(s,d)=>{s.days=d.days||[];} },
+  expenses :{ pick:s=>({exp:s.exp||[]}),                    put:(s,d)=>{s.exp=d.exp||[];} },
+  packing  :{ pick:s=>({pack:s.pack||[]}),                  put:(s,d)=>{s.pack=d.pack||[];} },
+  meta     :{ pick:s=>({title:s.title,start:s.start,end:s.end,hotel:s.hotel||null,rate:s.rate||0.052}),
+              put:(s,d)=>{s.title=d.title;s.start=d.start;s.end=d.end;s.hotel=d.hotel||null;s.rate=d.rate||0.052;} }
+};
+const SECT_KEYS=Object.keys(SECT);
+function stateRef(tid,sec){ return fbDb.collection("trips").doc(tid).collection("state").doc(sec); }
+
+/* 純函式（可單元測試，無 Firebase 依賴）：決定 migrate 唔 migrate + 要寫咩。
+   只有 trip 未 migrated 且【當前 user = trip 建立者】先 migrate，
+   防止「join 者用自己舊單機資料覆蓋人哋個 trip」= 旅行災難。 */
+function migrationPlan(tripDoc, localS, myUid){
+  if(!tripDoc || tripDoc.migrated===true) return {migrate:false, docs:null};
+  if(tripDoc.createdBy!==myUid) return {migrate:false, docs:null};
+  const docs={};
+  for(const k of SECT_KEYS) docs[k]=SECT[k].pick(localS||{});
+  return {migrate:true, docs};
+}
+async function fbMigrateIfNeeded(tid){
+  const tref=fbDb.collection("trips").doc(tid);
+  const myUid=fbAuth.currentUser.uid;
+  await fbDb.runTransaction(async tx=>{
+    const snap=await tx.get(tref);
+    const plan=migrationPlan(snap.exists?snap.data():null, S, myUid);
+    if(!plan.migrate) return;
+    for(const k of SECT_KEYS) tx.set(stateRef(tid,k), plan.docs[k]);
+    tx.update(tref,{migrated:true});
+  });
+}
+function cloudPersist(){
+  if(!CLOUD || !fbAuth.currentUser) return;
+  const cur=tripCtx(); if(!cur) return;
+  const tid=cur.tripId;
+  for(const k of SECT_KEYS){
+    const json=JSON.stringify(SECT[k].pick(S));
+    if(json===_sent[k]) continue;            // 冇變就唔寫（慳 quota + 防環）
+    _sent[k]=json;
+    stateRef(tid,k).set(JSON.parse(json),{merge:false})
+      .catch(e=>toast("☁️ 同步寫入失敗（離線會自動補）"));   // offline persistence 會 queue
+  }
+}
+function startCloudSync(tid){
+  SECT_KEYS.forEach(k=>{
+    stateRef(tid,k).onSnapshot({includeMetadataChanges:false}, snap=>{
+      if(snap.metadata.hasPendingWrites) return;   // 本機 echo，唔 re-render
+      if(!snap.exists) return;
+      const d=snap.data();
+      SECT[k].put(S,d);
+      _sent[k]=JSON.stringify(SECT[k].pick(S));     // 同步後 baseline，避免即刻回寫
+      render();
+    }, err=>toast("☁️ 同步中斷："+(err&&err.code||"unknown")));
+  });
+}
+async function cloudBoot(){
+  try{
+    await fbSignIn();
+    const cur=tripCtx();
+    if(!cur){ load(); render(); return; }          // 冇 trip context → 退單機
+    await fbMigrateIfNeeded(cur.tripId);            // 只建立者會真 migrate（純函式守門）
+    S=S||seed();                                    // listener 未到前有個底，避免首 render 炸
+    CLOUD=true;
+    startCloudSync(cur.tripId);                     // 之後 S 由 snapshot 餵
+  }catch(e){
+    // offline-first：cloud 啟動失敗（網絡/config/權限）→ 退返單機，唔好白屏
+    CLOUD=false;
+    toast("☁️ 連唔上共享，暫用本機資料");
+    load(); render();
+  }
+}
+/* cloud 入口選單（功能性 stopgap：用 confirm/prompt；正式 UX 交 UU 設計 M2/M3）*/
+async function cloudMenu(){
+  if(!fbConfigured()){
+    alert("☁️ 共享行程未啟用：開發者要先填 Firebase 設定（FB_CFG）。\n而家照用單機版，資料存喺本機。");
+    return;
+  }
+  const cur=tripCtx();
+  try{
+    if(cur && !cur.fromLink){           // 已 join 過
+      const url=fbInviteUrl(cur.tripId,(JSON.parse(lsGet(TRIPKEY)||"{}").token)||"");
+      if(confirm("已加入共享行程。\n撳「確定」複製邀請連結俾同行者；「取消」離開共享。")){
+        (navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject())
+          .then(()=>toast("邀請連結已複製 ✓")).catch(()=>prompt("邀請連結：",url));
+      }else if(confirm("確定離開共享行程？（本機資料會保留）")){
+        fbLeaveCloud(); toast("已離開共享，回到單機"); }
+      return;
+    }
+    if(cur && cur.fromLink){            // 由 invite link 入嚟
+      const nm=askName(); if(!nm){ toast("已取消加入"); return; }
+      await fbJoinByLink(cur,nm);
+      toast("已加入共享行程 ✓（同步功能 Step C 上線後生效）");
+      return;
+    }
+    // 未有 cloud trip：開新
+    if(confirm("開一個共享行程？同行者可經連結加入一齊編輯。\n（migration / 實時同步 Step C 上線後完整）")){
+      const nm=askName(); if(!nm){ toast("已取消"); return; }
+      const {tripId,token}=await fbCreateTrip(nm);
+      const url=fbInviteUrl(tripId,token);
+      (navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject())
+        .then(()=>toast("已開共享行程，邀請連結已複製 ✓")).catch(()=>prompt("邀請連結：",url));
+    }
+  }catch(err){ toast("☁️ 操作失敗："+(err&&err.message||err)); }
+}
 const KEY="fukuoka2026", EKEY="fukuoka2026_edit";
 
 /* ---------- 種子資料（來自 Excel 行程截圖，可自由改）---------- */
@@ -378,7 +578,7 @@ function load(){
   // 補欄位
   S.rate=S.rate||0.052; S.exp=S.exp||[]; S.links=S.links||[]; S.pack=S.pack||[];
 }
-function saveNow(){ lsSet(KEY,JSON.stringify(S)); }
+function saveNow(){ if(CLOUD) return cloudPersist(); lsSet(KEY,JSON.stringify(S)); }
 function save(){ clearTimeout(saveT); saveT=setTimeout(saveNow,250); }
 
 /* path get/set：data-p="days|0|items|1|name" */
@@ -598,6 +798,7 @@ function shareBar(){
     <button data-act="exp-json">⬇ 匯出 JSON</button>
     <button data-act="imp-json">⬆ 匯入 JSON</button>
     <button data-act="reseed">📋 套用 Philips 更新範本</button>
+    <button data-act="cloud">☁️ 共享行程（多人）</button>
   </div><div class="hint">「分享連結」會複製一條含全部資料嘅網址 — 喺另一部裝置開就匯入。資料越多網址越長；想穩陣可同時用匯出 JSON 備份。<br>已開過此 app 而想攞 Philips 最新行程 → 撳「套用 Philips 更新範本」（會覆蓋本機，先匯出 JSON 備份你嘅編輯）。</div>`;
 }
 
@@ -661,6 +862,7 @@ view.addEventListener("click",e=>{
   if(a==="share")    return shareLink();
   if(a==="exp-json") return expJSON();
   if(a==="imp-json") return impJSON();
+  if(a==="cloud")    return void cloudMenu();
   if(a==="reseed"){
     if(confirm("套用 Philips 更新範本？\n會以最新行程覆蓋本機（你之前嘅編輯會冇咗，建議先「匯出 JSON」備份）。")){
       S=seed(); saveNow(); selDay=-1; wantScroll=true; render();
@@ -717,9 +919,9 @@ if(window.matchMedia) matchMedia("(prefers-color-scheme: dark)")
   .addEventListener("change",syncTheme);
 
 /* ---------- init ---------- */
-load();
 edit=lsGet(EKEY)==="1";
-render();
+if(cloudShouldActivate()){ cloudBoot(); }   // cloud：sign-in→migrate→listener；失敗自動退單機
+else { load(); render(); }                    // 單機：行為同原本一模一樣
 
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){
   addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
