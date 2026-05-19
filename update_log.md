@@ -82,3 +82,11 @@
 - 生成 `#d=base64` 完整匯入連結交主公（開咗即覆蓋部機舊 localStorage — 無後端同步方式，主公拍板）。
 
 **驗證**：node 隔離 eval seed（無 JS error）+ 結構 assertion（8日連續/6/13航班/6/14寶可夢/6/15無重複/hotel/6/16交通）全 PASS + round-trip base64 decode 鏡像 app decoder PASS + `<script>` 整段 `node --check` PASS。⚠️ 真機視覺/觸感未驗（無 browser 環境）→ 需主公 iPhone 實測。
+
+## 2026-05-19（後續5）— 新手帳 v2 首版（主公命大改UI，馬上交付）
+
+- 新增 `/v2/index.html`：全新設計語言（暖調 editorial、light/auto-dark、卡片+大日 hero、map-forward stop card、collab presence chip、segmented nav），共用 v11 同一行程 seed（8日福岡）。
+- root v11 **零改動**（旅程 system-of-record 安全）；v2 獨立 localStorage key `fukuoka2026_v2`。
+- 即時可開：https://fukuoka.wicalyu.com/v2/ 。功能：日 rail 切換、stop 完成勾選、開支 JPY→HKD 自動小計、打包勾選、連結。
+- 驗證：node --check PASS、headless render smoke PASS（8日/小計/匯率）。⚠️ 視覺/觸感真機未驗（本環境無 browser）→ 你開個 URL 即見；唔 work 我再修。
+- v2 北極星後續（presence 即時/真協作/地圖嵌入/journal 相）= post-trip 繼續，今次先交可見可用首版。

@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f4c45">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>福岡・九州 旅遊手帳 v2</title>
+<style>
+  :root{
+    color-scheme: light dark;
+    --bg:#f6f3ec; --paper:#fffdf8; --line:#e6dfce; --ink:#23201a; --mut:#7c7464;
+    --acc:#0f6b5f; --acc2:#15897a; --acc-soft:#dff0eb; --gold:#c8902a; --gold-soft:#f6ead0;
+    --fly:#2563c9; --move:#0f9d8e; --food:#d9772b; --spot:#8a5cc9; --warn:#b9761b;
+    --sh:0 1px 2px rgba(40,32,20,.06),0 10px 28px rgba(40,32,20,.07);
+    --sb:env(safe-area-inset-bottom,0px); --st:env(safe-area-inset-top,0px);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#15140f; --paper:#1d1b15; --line:#322d22; --ink:#efe9da; --mut:#9b9079;
+    --acc:#3fb9a6; --acc2:#52cdb9; --acc-soft:#16302b; --gold:#e0b35e; --gold-soft:#352b16;
+    --sh:0 1px 2px rgba(0,0,0,.45),0 10px 28px rgba(0,0,0,.4);
+  }}
+  *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--bg);color:var(--ink);
+    font-family:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+    -webkit-text-size-adjust:100%;line-height:1.6}
+  body{min-height:100dvh;padding-bottom:calc(78px + var(--sb))}
+  button,.go{font-family:inherit;cursor:pointer;border:0;background:none;
+    transition:transform .14s cubic-bezier(.2,.7,.3,1),background-color .15s,box-shadow .15s;
+    touch-action:manipulation}
+  button:active,.go:active{transform:scale(.95)}
+  :focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:8px}
+  @media(prefers-reduced-motion:reduce){button:active,.go:active{transform:none;filter:brightness(.95)}}
+
+  header{position:sticky;top:0;z-index:40;
+    background:linear-gradient(180deg,var(--acc) 0%,var(--acc2) 100%);
+    color:#fff;padding:calc(var(--st) + 14px) 18px 16px;border-radius:0 0 22px 22px;
+    box-shadow:var(--sh)}
+  .htop{display:flex;align-items:center;gap:10px}
+  .brand{flex:1;min-width:0}
+  .brand .k{font-size:11px;font-weight:800;letter-spacing:2px;opacity:.8}
+  .brand h1{font-size:21px;font-weight:800;letter-spacing:.3px;margin:1px 0 0}
+  .brand .dt{font-size:12px;opacity:.9;margin-top:2px}
+  .pres{flex:0 0 auto;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);
+    color:#fff;font-size:11.5px;font-weight:700;padding:7px 12px;border-radius:999px}
+  .pres .dot{width:7px;height:7px;border-radius:50%;background:#9be8d8}
+  .drail{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:14px -4px -2px;padding:2px 4px 4px;
+    -webkit-mask:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent)}
+  .drail::-webkit-scrollbar{display:none}
+  .dp{flex:0 0 auto;min-width:54px;border-radius:14px;padding:8px 12px;text-align:center;
+    background:rgba(255,255,255,.16);color:#fff;line-height:1.15}
+  .dp .n{font-size:16px;font-weight:800} .dp .w{font-size:10px;opacity:.85;font-weight:700}
+  .dp.on{background:#fff;color:var(--acc);transform:scale(1.05);box-shadow:0 4px 14px rgba(0,0,0,.2)}
+  .dp.today::after{content:"";display:block;width:5px;height:5px;border-radius:50%;
+    background:var(--gold);margin:3px auto 0}
+
+  main{padding:16px 16px 0;max-width:680px;margin:0 auto}
+  .hero{background:var(--paper);border:1px solid var(--line);border-radius:20px;
+    padding:18px;box-shadow:var(--sh);margin-bottom:14px;position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;right:-30px;top:-30px;width:120px;height:120px;
+    border-radius:50%;background:var(--acc-soft);opacity:.6}
+  .hero .lbl{font-size:11px;font-weight:800;color:var(--acc);letter-spacing:1.5px}
+  .hero h2{font-size:23px;font-weight:800;margin:5px 0 0;position:relative}
+  .hero .sub{font-size:13px;color:var(--mut);margin-top:6px;position:relative}
+  .hotel{display:flex;align-items:center;gap:11px;background:var(--gold-soft);
+    border:1px solid var(--line);border-radius:15px;padding:12px 14px;margin-bottom:16px;font-size:13px}
+  .hotel .i{font-size:20px} .hotel .m{flex:1;min-width:0;font-weight:700;line-height:1.35}
+  .hotel .m small{display:block;color:var(--mut);font-weight:600;font-size:11.5px;margin-top:2px}
+  .hotel .go{flex:0 0 auto;background:var(--acc);color:#fff;font-weight:800;font-size:12px;
+    padding:9px 13px;border-radius:999px;text-decoration:none}
+
+  .stop{background:var(--paper);border:1px solid var(--line);border-radius:18px;
+    padding:15px 16px;margin-bottom:12px;box-shadow:var(--sh);position:relative}
+  .stop.done{opacity:.62}
+  .srow{display:flex;align-items:flex-start;gap:11px}
+  .kd{flex:0 0 auto;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
+    font-size:19px;background:var(--acc-soft)}
+  .kd.fly{background:#dde9fb} .kd.move{background:#d8f1ec} .kd.food{background:#f8e6d4}
+  .kd.spot{background:#ece0f7}
+  .sbody{flex:1;min-width:0}
+  .stime{font-size:11.5px;font-weight:800;color:var(--acc);letter-spacing:.3px}
+  .sname{font-size:16px;font-weight:800;margin:1px 0 0;word-break:break-word}
+  .sloc{font-size:12px;color:var(--mut);margin-top:3px}
+  .chk{flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:2px solid var(--line);
+    background:var(--paper);display:grid;place-items:center;color:transparent;font-size:14px;font-weight:900}
+  .stop.done .chk{background:var(--acc);border-color:var(--acc);color:#fff}
+  .sinfo{font-size:12.5px;color:var(--ink);line-height:1.65;margin:10px 0 0;white-space:pre-wrap;
+    background:var(--bg);border-radius:11px;padding:10px 12px;border:1px solid var(--line)}
+  .sinfo.tip{background:var(--gold-soft)}
+  .acts{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap}
+  .acts a,.acts button{font-size:12px;font-weight:800;padding:8px 13px;border-radius:999px;
+    text-decoration:none;border:1px solid var(--line);color:var(--ink);background:var(--bg)}
+  .acts a.pri{background:var(--acc);color:#fff;border-color:var(--acc)}
+  .cost{font-size:12px;font-weight:800;color:var(--gold);margin-left:auto;align-self:center}
+
+  .seg{position:fixed;left:0;right:0;bottom:0;z-index:45;
+    background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(14px);
+    border-top:1px solid var(--line);display:flex;padding:8px 10px calc(8px + var(--sb))}
+  .seg button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+    font-size:11px;font-weight:800;color:var(--mut);padding:6px 0;background:none}
+  .seg button .ic{font-size:19px}
+  .seg button.on{color:var(--acc)}
+  .seg button.on .ic{transform:translateY(-1px)}
+
+  .panel{display:none} .panel.on{display:block}
+  .sum{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:18px;
+    box-shadow:var(--sh);margin-bottom:14px;text-align:center}
+  .sum .big{font-size:30px;font-weight:800;color:var(--acc)}
+  .sum .sm{font-size:12px;color:var(--mut);margin-top:3px}
+  .li{display:flex;align-items:center;gap:11px;background:var(--paper);border:1px solid var(--line);
+    border-radius:14px;padding:13px 15px;margin-bottom:9px;box-shadow:var(--sh);font-size:14px}
+  .li .chk{margin-left:auto}
+  .li.dn{opacity:.55} .li.dn span{text-decoration:line-through}
+  .li a{color:var(--acc);font-weight:700;text-decoration:none;flex:1;min-width:0;word-break:break-word}
+  footer{text-align:center;color:var(--mut);font-size:11px;padding:18px 16px 8px;line-height:1.7}
+  .v2tag{display:inline-block;background:var(--gold);color:#fff;font-size:10px;font-weight:800;
+    padding:2px 8px;border-radius:999px;letter-spacing:1px;vertical-align:middle;margin-left:6px}
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <div class="brand">
+      <div class="k">FUKUOKA · KYUSHU</div>
+      <h1 id="ttl">福岡・九州 旅遊手帳<span class="v2tag">v2</span></h1>
+      <div class="dt" id="dates"></div>
+    </div>
+    <div class="pres" title="協作狀態（v2 北極星：即時 presence）"><span class="dot"></span><span>單機</span></div>
+  </div>
+  <div class="drail" id="drail"></div>
+</header>
+
+<main>
+  <section class="panel on" id="p-trip"></section>
+  <section class="panel" id="p-exp"></section>
+  <section class="panel" id="p-pack"></section>
+  <section class="panel" id="p-link"></section>
+  <footer>
+    福岡・九州 旅遊手帳 <b>v2</b> · 全新設計 · 資料本機儲存（v2 獨立，唔影響 v1）<br>
+    map-centric / 旅程日誌 / 協作 — v2 北極星方向首版
+  </footer>
+</main>
+
+<nav class="seg" id="seg">
+  <button data-p="trip" class="on"><span class="ic">🗺️</span>行程</button>
+  <button data-p="exp"><span class="ic">💴</span>開支</button>
+  <button data-p="pack"><span class="ic">🧳</span>打包</button>
+  <button data-p="link"><span class="ic">🔗</span>連結</button>
+</nav>
+
+<script>
+const SK="fukuoka2026_v2";
+function lsG(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsS(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+let _u=0; function uid(){return "i"+(Date.now().toString(36))+(_u++)}
+const SEED={
+  title:"福岡・九州 旅遊手帳",
+  start:"2026-06-13", end:"2026-06-20",
+  hotel:{name:"福岡蒙特埃馬納酒店",addr:"福岡市中央区渡辺通3-4-24",tel:"81-92-7357111",
+    stations:["渡辺通駅 步行207m","天神南駅 步行490m","西鉄福岡(天神)駅 步行740m"]},
+  rate:0.052,                       // JPY → HKD（可改）
+  days:[
+   {date:"2026-06-13",title:"天神（到埗半日）",items:[
+     {id:uid(),time:"10:55-15:20",name:"HK Express 抵福岡",kind:"fly",loc:"福岡空港 国際線ターミナル",
+      info:"HK Express 13/06/2026 10:55–15:20。落機過關提行李＋入市區，實際只剩半日 → 當日只排天神步行可達室內點，唔好排遠程。",
+      cost:"",cur:"JPY",done:false},
+     {id:uid(),time:"",name:"天神 散策（渡辺通酒店一帶）",kind:"spot",
+      loc:"福岡市中央区天神",
+      info:"住宿渡辺通駅步行可達；天神地下街／PARCO／ソラリア 等室內點，啱到埗日輕鬆行＋執行李。",
+      cost:"",cur:"JPY",done:false}]},
+   {date:"2026-06-14",title:"Moff動物咖啡＋寶可夢中心",items:[
+     {id:uid(),time:"",name:"Moff Animal Café（ららぽーと福岡）",kind:"food",
+      loc:"Moff Animal Cafe ららぽーと福岡4F 福岡市博多区那珂6-23-1",
+      info:"動物咖啡館。交通：JR鹿兒島本線「竹下」站步行約9分。",
+      cost:"",cur:"JPY",done:false},
+     {id:uid(),time:"",name:"三井 LaLaport 福岡",kind:"spot",
+      loc:"ららぽーと福岡 福岡市博多区那珂6-23-1",
+      info:"大型購物中心，同 Moff 同一棟。交通：博多／天神搭巴士可達；或西鉄大牟田線「大橋」站直達巴士約每15分一班，單程¥220。",
+      cost:"",cur:"JPY",done:false},
+     {id:uid(),time:"",name:"Pokemon Center 福岡",kind:"spot",
+      loc:"博多マルイ(0101) 福岡市博多区博多駅中央街9-1 2F",
+      info:"博多丸井(0101)百貨 2樓。交通：博多車站（博多口）。營業：10:00–21:00，無定休。",
+      cost:"",cur:"JPY",done:false}]},
+   {date:"2026-06-15",title:"天神 / 博多（室內為主）",items:[
+     {id:uid(),time:"",name:"ONE FUKUOKA BLDG.（天神ワンビル）",kind:"spot",
+      loc:"ONE FUKUOKA BLDG 福岡市中央区天神1-11-1",
+      info:"📋 Philips 建議（新增）：2025-04-24 開業新地標，B2–4F 約130店、逾6成九州初出店，含酒店；室內、雨天友好，啱到埗日／梅雨。\nsource: tenjinsite 2025 / fashion-press 2025",
+      cost:"",cur:"JPY",done:false}]},
+   {date:"2026-06-16",title:"THE OUTLETS KITAKYUSHU 北九州",items:[
+     {id:uid(),time:"",name:"THE OUTLETS KITAKYUSHU 北九州",kind:"spot",
+      loc:"ジ アウトレット北九州 福岡県北九州市八幡東区東田4丁目1番1号",
+      info:"交通：JRスペースワールド駅(太空世界站)步行約5分。博多站搭JR鹿兒島本線『區間快速(門司港行)』一車直達太空世界站，免轉乘。\n營業：10:00–20:00\n📋 Philips：營業時間已用官網確認(2026-05)；⚠️ 6/16 與 6/17 連兩日遠程，體力負荷高，可考慮中間插一日輕鬆行程緩衝。",
+      cost:"",cur:"JPY",done:false},
+     {id:uid(),time:"",name:"門司港レトロ（可選串連）",kind:"spot",
+      loc:"門司港レトロ 北九州市門司区港町",
+      info:"📋 Philips 建議（可選）：同北九州、JR可達，西洋復古港町＋九州鉄道記念館（室內）。⚠️ 觀光列車「潮風号」平日不行，6/16 係星期二搭唔到，只可徒歩散策。source: 平成筑豊鉄道 2025–2026 運行表",
+      cost:"",cur:"JPY",done:false}]},
+   {date:"2026-06-17",title:"由布院（梅雨＋預約風險高）",items:[
+     {id:uid(),time:"10:11→12:27",name:"ゆふいんの森1号 博多→由布院",kind:"move",
+      loc:"博多駅",
+      info:"📋 Philips（重要）：ゆふいんの森全車指定席，乘車日「1個月前 10:00」開賣，靚位常10分鐘內滿。\n👉 行前必做：約 2026-05-17 一開賣即上 JR九州ネット予約搶 6/17 去程＋回程指定席。\n搶唔到 → 改特急「ゆふ」或高速巴士「ゆふいん号」（需另預約，單程約¥3,250，2025-04改ダイヤ）。\nsource: JR九州官網 2026-05 / 西鉄・亀の井バス 2025-04",
+      cost:"",cur:"JPY",done:false},
+     {id:uid(),time:"",name:"由布院 散策（金鱗湖・湯の坪街道）",kind:"spot",
+      loc:"由布院 大分県由布市湯布院町",
+      info:"回程參考：ゆふいんの森4号 由布院 15:56→18:10，或6号 17:17→19:28。\n📋 Philips：⚠️ 6/17 高機率落喺九州北部梅雨期（2026 預測6月上旬入梅），由布院以戶外散策為主；備雨具，雨大可轉室內溫泉/足湯/美術館。\n⚠️ 當日來回車程約4.5h、停留僅約3.5h偏趕 → 認真考慮由布院過夜更穩。source: 日本気象協会2026-04-23 / ウェザーニュース2026-05-12",
+      cost:"3250",cur:"JPY",done:false}]},
+   {date:"2026-06-18",title:"太宰府",items:[
+     {id:uid(),time:"",name:"太宰府天滿宮",kind:"spot",loc:"太宰府天満宮 福岡県太宰府市宰府4-7-1",
+      info:"交通：博多バスターミナル1F「11番のりば」太宰府ライナーバス『旅人』約40分，不需預約，滿座搭下一班。\n車資：建議直接買「福岡市内＋旅人 1日フリー乗車券」大人¥2,100／小童¥1,050（已含來回、免理單程¥610定¥700之爭，最化算）。\n📋 Philips（2026-05-19 已更新）：✅『令和の大改修』完成，**御本殿已於 2026-05-17 重新開放參拜**（124年來最大改修，本身已成賣點）；特別「仮殿」約用 3 個月慢慢解体，6/18 可能仍見到部分。原「仮殿期過期、狀態未明」之疑慮已釋除。雨天可配鄰接室內嘅九州国立博物館。source: 日本経済新聞／太宰府天満宮官網／現地確認 2026-05-17",
+      cost:"1200",cur:"JPY",done:false}]},
+   {date:"2026-06-19",title:"博多運河城",items:[
+     {id:uid(),time:"",name:"博多運河城 Canal City Hakata",kind:"spot",
+      loc:"キャナルシティ博多 福岡市博多区住吉1丁目2",
+      info:"📋 Philips：5F ラーメンスタジアム 2026-04-17 翻新重開（九州初出店等共8店）— 賣點，值得排。\n⚠️ East Bldg 仍施工，2026年秋先再開，6/19 一帶可能圍封。\n室內為主、雨天友好，排喺梅雨期合理。source: 日経2026-04 / 出店ウォッチ2026",
+      cost:"",cur:"JPY",done:false}]},
+   {date:"2026-06-20",title:"回港",items:[
+     {id:uid(),time:"11:00–11:30",name:"前往機場（提早出發）",kind:"move",
+      loc:"福岡空港 国際線ターミナル",
+      info:"📋 Philips（已調整）：原定12:00→改 11:00–11:30 出發。福岡空港官網 2026-05-07 公告国際線保安検査最長約60分、建議起飛約3小時前到場。12:00出發配16:15起飛偏緊無緩衝。\n👉 前一晚執好行李＋web check-in。地鐵博多→福岡空港約11分，再轉国際線接駁巴士約10–15分。source: 福岡空港官網 2026-05-07",
+      cost:"",cur:"JPY",done:false},
+     {id:uid(),time:"16:15–19:00",name:"HK Express 回港",kind:"fly",loc:"",
+      info:"HK Express 20/06/2026 (Sat) 16:15–19:00\n📋 Philips（2026-05-19）：⚠️ 呢個時刻係 single-source 參考，**Philips 查唔到可交叉嘅公開定論 → 以你張機票 booking confirmation / HK Express App 為準**，唔好淨信呢度個 seed 時間（影響 6/20 出發機場部署）。",
+      cost:"",cur:"JPY",done:false}]}
+  ],
+  exp:[],
+  links:[
+   {id:uid(),label:"HK Express 管理預訂",url:"https://www.hkexpress.com/"},
+   {id:uid(),label:"JR九州ネット予約（ゆふいんの森指定席）",url:"https://www.jrkyushu.co.jp/trains/yufuinnomori/"},
+   {id:uid(),label:"西鉄バス 太宰府ライナー『旅人』",url:"https://www.nishitetsu.jp/bus/rosen/dazaihu_liner/"},
+   {id:uid(),label:"太宰府天満宮 官網（行前查本殿狀態）",url:"https://www.dazaifutenmangu.or.jp/"},
+   {id:uid(),label:"福岡空港 官網（保安/航班）",url:"https://www.fukuoka-airport.jp/"},
+   {id:uid(),label:"福岡市交通局",url:"https://subway.city.fukuoka.lg.jp/"}
+  ],
+  pack:[
+   {id:uid(),t:"護照 / 機票",d:false},{id:uid(),t:"日圓現金 + 信用卡",d:false},
+   {id:uid(),t:"充電器 / 轉插 / 尿袋",d:false},
+   {id:uid(),t:"雨具（📋 Philips：6/13–20 高機率梅雨期）",d:false},
+   {id:uid(),t:"常用藥物",d:false},{id:uid(),t:"網卡 / 漫遊",d:false},
+   {id:uid(),t:"📋 約5/17搶 ゆふいんの森 6/17 指定席",d:false},
+   {id:uid(),t:"✅ 太宰府本殿已重開（2026-05-17，大改修完）— 無需行前再查",d:true}
+  ]
+};
+let S; try{ const r=lsG(SK); S=r?JSON.parse(r):JSON.parse(JSON.stringify(SEED)); }
+catch(e){ S=JSON.parse(JSON.stringify(SEED)); }
+if(!S.days){ S=JSON.parse(JSON.stringify(SEED)); }
+function save(){ lsS(SK,JSON.stringify(S)); }
+
+const KIND={fly:["fly","✈️"],move:["move","🚆"],food:["food","🍜"],spot:["spot","📍"]};
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function wd(ds){return ["日","一","二","三","四","五","六"][new Date(ds+"T00:00:00").getDay()]}
+function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function mapA(q){return "https://maps.apple.com/?q="+encodeURIComponent(q)}
+function mapG(q){return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(q)}
+
+let sel=0;
+function render(){
+  document.getElementById("ttl").innerHTML=esc(S.title)+'<span class="v2tag">v2</span>';
+  document.getElementById("dates").textContent=S.start+" ～ "+S.end+"（共 "+S.days.length+" 日）";
+  const tdy=todayStr();
+  const ti=S.days.findIndex(d=>d.date===tdy); if(ti>=0 && sel===0 && !window._touched) sel=ti;
+  // day rail
+  document.getElementById("drail").innerHTML=S.days.map((d,i)=>{
+    const md=d.date.slice(5).replace("-","/");
+    return `<button class="dp${i===sel?" on":""}${d.date===tdy?" today":""}" data-d="${i}">
+      <div class="n">${md}</div><div class="w">週${wd(d.date)}</div></button>`;
+  }).join("");
+  renderTrip(); renderExp(); renderPack(); renderLink();
+}
+function renderTrip(){
+  const d=S.days[sel]; if(!d)return;
+  const tdy=todayStr();
+  let h=`<div class="hero">
+    <div class="lbl">${d.date===tdy?"今日行程":"DAY "+(sel+1)+" · "+d.date.replace(/-/g,".")}</div>
+    <h2>${esc(d.title)}</h2>
+    <div class="sub">${d.date}（週${wd(d.date)}）· ${d.items.length} 個行程點</div>
+  </div>`;
+  if(sel===0 && S.hotel){
+    h+=`<div class="hotel"><span class="i">🏨</span>
+      <div class="m">${esc(S.hotel.name)}<small>${esc((S.hotel.stations&&S.hotel.stations[0])||S.hotel.addr)} · ☎ ${esc(S.hotel.tel||"")}</small></div>
+      <a class="go" href="${mapA(S.hotel.name+" "+(S.hotel.addr||""))}">導航</a></div>`;
+  }
+  h+=d.items.map((it,ix)=>{
+    const k=KIND[it.kind]||["spot","📍"];
+    const tip=/📋|⚠️|👉/.test(it.info||"");
+    const q=it.loc||it.name;
+    const cost=it.cost?`<span class="cost">¥${Number(it.cost).toLocaleString()}</span>`:"";
+    return `<div class="stop${it.done?" done":""}" data-day="${sel}" data-ix="${ix}">
+      <div class="srow">
+        <div class="kd ${k[0]}">${k[1]}</div>
+        <div class="sbody">
+          ${it.time?`<div class="stime">${esc(it.time)}</div>`:""}
+          <div class="sname">${esc(it.name)}</div>
+          ${it.loc?`<div class="sloc">📍 ${esc(it.loc)}</div>`:""}
+        </div>
+        <div class="chk" data-chk="${ix}" role="button" aria-label="標記完成">✓</div>
+      </div>
+      ${it.info?`<div class="sinfo${tip?" tip":""}">${esc(it.info)}</div>`:""}
+      <div class="acts">
+        <a class="pri" href="${mapA(q)}">🧭 Apple 導航</a>
+        <a href="${mapG(q)}">Google</a>${cost}
+      </div></div>`;
+  }).join("");
+  document.getElementById("p-trip").innerHTML=h;
+}
+function renderExp(){
+  let jpy=0; S.days.forEach(d=>d.items.forEach(it=>{ if(it.cost) jpy+=Number(it.cost)||0; }));
+  (S.exp||[]).forEach(e=>jpy+=Number(e.amt)||0);
+  const hkd=Math.round(jpy*(S.rate||0.052));
+  document.getElementById("p-exp").innerHTML=
+    `<div class="sum"><div class="big">¥${jpy.toLocaleString()}</div>
+      <div class="sm">≈ HK$${hkd.toLocaleString()} （匯率 ${S.rate||0.052}）· 行程內已標金額自動小計</div></div>`+
+    S.days.flatMap(d=>d.items.filter(it=>it.cost).map(it=>
+      `<div class="li"><span style="flex:1">${esc(it.name)}<br><small style="color:var(--mut)">${d.date}</small></span>
+       <b style="color:var(--gold)">¥${Number(it.cost).toLocaleString()}</b></div>`)).join("")
+    || (jpy?"":'<div class="li" style="justify-content:center;color:var(--mut)">行程未標金額</div>');
+}
+function renderPack(){
+  document.getElementById("p-pack").innerHTML=(S.pack||[]).map((p,i)=>
+    `<div class="li${p.d?" dn":""}" data-pk="${i}"><span style="flex:1">${esc(p.t)}</span>
+      <div class="chk" style="${p.d?"background:var(--acc);border-color:var(--acc);color:#fff":""}">✓</div></div>`).join("");
+}
+function renderLink(){
+  document.getElementById("p-link").innerHTML=(S.links||[]).map(l=>
+    `<div class="li"><a href="${esc(l.url)}" target="_blank" rel="noopener">🔗 ${esc(l.label)}</a></div>`).join("");
+}
+
+document.addEventListener("click",e=>{
+  const dp=e.target.closest("[data-d]");
+  if(dp){ window._touched=1; sel=+dp.dataset.d; render();
+    document.getElementById("p-trip").scrollIntoView({behavior:"smooth",block:"start"}); return; }
+  const ck=e.target.closest("[data-chk]");
+  if(ck){ const st=ck.closest(".stop"); const dy=+st.dataset.day, ix=+st.dataset.ix;
+    S.days[dy].items[ix].done=!S.days[dy].items[ix].done; save(); render(); return; }
+  const pk=e.target.closest("[data-pk]");
+  if(pk){ const i=+pk.dataset.pk; S.pack[i].d=!S.pack[i].d; save(); renderPack(); return; }
+  const sg=e.target.closest("#seg button");
+  if(sg){ const p=sg.dataset.p;
+    document.querySelectorAll("#seg button").forEach(b=>b.classList.toggle("on",b===sg));
+    document.querySelectorAll(".panel").forEach(s=>s.classList.toggle("on",s.id==="p-"+p));
+    scrollTo({top:0,behavior:"smooth"}); return; }
+});
+render();
+</script>
+</body>
+</html>
