@@ -258,7 +258,7 @@ function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
    未啟動時 = 現有單機 localStorage 行為，完全唔變（zero-break）。
    load()/save()/boot 一行都冇郁；join flow / migration 係 M2 Step B/C。
    ⚠️ 主公：去 Firebase Console 開 project → 加 Web app → 將 config 貼落 FB_CFG。 */
-const TRIPKEY="fukuoka2026_trip";   // {tripId, token?} — 已 join 嘅 cloud trip
+const TRIPKEY="fukuoka2026_trip";   // {tripId} — 已 join 嘅 cloud trip（capability 模型，無 token）
 // Firebase web config — 設計上 client-public（非 secret；安全靠 firestore.rules + capability-URL 模型）。
 // Project: fukuoka-techo（個人 account yuwaiho112@gmail.com，asia-east2/HK）。
 const FB_CFG = {
@@ -270,13 +270,15 @@ const FB_CFG = {
   appId:"1:145010683915:web:441109671cf6d5bd0f570e"
 };
 function fbConfigured(){ return FB_CFG.apiKey && !FB_CFG.apiKey.startsWith("__"); }
-/* 有冇 cloud trip context：URL #join=token&t=tripId 或 之前 join 過 */
+/* Cloud trip context（capability-URL 模型，Lucy B）：
+   tripId = 不可猜 secret，本身就係通行證；無 token（rules 從來唔 check token，
+   假 token 已刪以免誤導安全感）。URL 用 fragment #t=（F4：唔入 query，唔經
+   server log / 瀏覽器歷史顯眼處）；仍兼容舊 ?t= query。 */
 function tripCtx(){
   const h=new URLSearchParams(location.hash.slice(1));
   const q=new URLSearchParams(location.search);
   const tripId=h.get("t")||q.get("t");
-  const token=h.get("join")||q.get("join");
-  if(tripId) return {tripId, token:token||null, fromLink:true};
+  if(tripId) return {tripId, fromLink:true};
   try{ const s=lsGet(TRIPKEY); if(s) return {...JSON.parse(s), fromLink:false}; }catch(e){}
   return null;
 }
@@ -302,11 +304,6 @@ async function fbSignIn(){
    ⚠️ 重要：呢步【唔接】realtime listener / 唔改 render()/save() →
    建咗 trip 都仲係單機畫面，「見到同步」係 Step C(C3 per-section sync)。
    未 join = 現單機完全不變（zero-break 保持）。 */
-function fbNewToken(){
-  const a=new Uint8Array(16);
-  (crypto.getRandomValues?crypto:window.crypto).getRandomValues(a);
-  return [...a].map(x=>x.toString(16).padStart(2,"0")).join("");
-}
 function askName(){
   const n=(prompt("你喺個共享行程嘅顯示名（同行者會見到，例：阿明）：","")||"").trim();
   return n.slice(0,40);   // 上限防爆；空 = 取消
@@ -315,34 +312,32 @@ function askName(){
 async function fbCreateTrip(displayName){
   await fbSignIn();
   const uid=fbAuth.currentUser.uid;
-  const ref=fbDb.collection("trips").doc();
-  const tripId=ref.id, token=fbNewToken();
+  const ref=fbDb.collection("trips").doc();        // ref.id = 不可猜 20-char = capability secret
+  const tripId=ref.id;
   const ts=firebase.firestore.FieldValue.serverTimestamp();
   const batch=fbDb.batch();
   batch.set(ref,{title:(S&&S.title)||"我嘅行程",createdBy:uid,createdAt:ts,
     schema:"c3",migrated:false});                       // migrated:false → Step C 先 import S
   batch.set(ref.collection("members").doc(uid),{displayName,joinedAt:ts});
-  batch.set(ref.collection("invites").doc(token),{createdBy:uid,createdAt:ts});
   await batch.commit();
-  lsSet(TRIPKEY,JSON.stringify({tripId,token}));
-  return {tripId,token};
+  lsSet(TRIPKEY,JSON.stringify({tripId}));
+  return {tripId};
 }
-/* 經 invite link 加入（ctx 來自 tripCtx()）*/
+/* 經 invite link 加入（ctx 來自 tripCtx()）。capability 模型：知 tripId 即可入
+   （rules 本來就係咁，無 token 檢查）。風險已由主公接受、UX 會誠實告知。 */
 async function fbJoinByLink(ctx,displayName){
   await fbSignIn();
   const uid=fbAuth.currentUser.uid;
   const tref=fbDb.collection("trips").doc(ctx.tripId);
-  if(ctx.token){
-    const inv=await tref.collection("invites").doc(ctx.token).get();
-    if(!inv.exists) throw new Error("邀請連結無效或已失效");
-  }
   await tref.collection("members").doc(uid).set(
     {displayName,joinedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
-  lsSet(TRIPKEY,JSON.stringify({tripId:ctx.tripId,token:ctx.token||null}));
+  lsSet(TRIPKEY,JSON.stringify({tripId:ctx.tripId}));
   return {tripId:ctx.tripId};
 }
-function fbInviteUrl(tripId,token){
-  return location.origin+location.pathname+"?t="+tripId+"#join="+token;
+/* F4：tripId 全入 URL fragment（唔入 query → 唔經 Referer/server log/歷史顯眼處）；
+   配合 head 既有 <meta name=referrer no-referrer>。 */
+function fbInviteUrl(tripId){
+  return location.origin+location.pathname+"#t="+tripId;
 }
 function fbLeaveCloud(){ try{localStorage.removeItem(TRIPKEY);}catch(e){} }
 
@@ -430,8 +425,8 @@ async function cloudMenu(){
   const cur=tripCtx();
   try{
     if(cur && !cur.fromLink){           // 已 join 過
-      const url=fbInviteUrl(cur.tripId,(JSON.parse(lsGet(TRIPKEY)||"{}").token)||"");
-      if(confirm("已加入共享行程。\n撳「確定」複製邀請連結俾同行者；「取消」離開共享。")){
+      const url=fbInviteUrl(cur.tripId);
+      if(confirm("已加入共享行程。\n撳「確定」複製邀請連結俾同行者；「取消」離開共享。\n\n⚠️ 連結＝永久通行證：任何攞到嘅人可改／刪呢個行程，收唔返。只發畀信得過嘅同行者。")){
         (navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject())
           .then(()=>toast("邀請連結已複製 ✓")).catch(()=>prompt("邀請連結：",url));
       }else if(confirm("確定離開共享行程？（本機資料會保留）")){
@@ -447,8 +442,8 @@ async function cloudMenu(){
     // 未有 cloud trip：開新
     if(confirm("開一個共享行程？同行者可經連結加入一齊編輯。\n（migration / 實時同步 Step C 上線後完整）")){
       const nm=askName(); if(!nm){ toast("已取消"); return; }
-      const {tripId,token}=await fbCreateTrip(nm);
-      const url=fbInviteUrl(tripId,token);
+      const {tripId}=await fbCreateTrip(nm);
+      const url=fbInviteUrl(tripId);
       (navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject())
         .then(()=>toast("已開共享行程，邀請連結已複製 ✓")).catch(()=>prompt("邀請連結：",url));
     }

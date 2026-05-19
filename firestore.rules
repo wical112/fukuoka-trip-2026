@@ -32,15 +32,19 @@ service cloud.firestore {
         allow create, update, delete: if signedIn() && request.auth.uid == uid;
       }
 
-      // invite token：登入者可讀（join 前要驗 token），只 member 可發/改
-      match /invites/{token} {
-        allow read: if signedIn();
-        allow write: if isMember(tripId);
-      }
+      // F5: invites collection 已移除（capability-URL 模型 = tripId 本身係 secret，
+      //     假 token rules 從來無 check 過、誤導安全感，client 已刪）。任何 invites/* 一律 deny。
+      match /invites/{token} { allow read, write: if false; }
 
       // C3 per-section state docs（M2 實際用緊呢個）：itinerary/expenses/packing/meta
+      // F6: section 限定 4 個已知名（防造垃圾 doc 灌爆 quota）+ 寫入須為 map。
+      //     （Firestore rules 無 byte-size fn；硬上限靠平台 1MB/doc。client 另做
+      //      snapshot defensive validate，呢度封 schema 面。）
       match /state/{section} {
-        allow read, write: if isMember(tripId);
+        allow read: if isMember(tripId);
+        allow write: if isMember(tripId)
+          && section in ['itinerary','expenses','packing','meta']
+          && request.resource.data is map;
       }
 
       // 以下 per-item 結構 = phase-2 normalize 先用（M3 完整 branch 之後）

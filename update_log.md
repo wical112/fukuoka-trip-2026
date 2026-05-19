@@ -1,5 +1,15 @@
 # 更新日誌 — 福岡・九州 旅遊手帳
 
+## 2026-05-19（後續）— #13 capability-URL 重構 + Lucy F1/F4/F5/F6
+
+- **F1**：刪走假 invite token（`fbNewToken` 移除、create/join 唔再寫/讀 invites doc）；tripId(20-char 不可猜)=唯一 capability secret，rules 本來就係咁。
+- **F4**：`fbInviteUrl` 改 `#t=<tripId>`（全入 fragment，唔入 query → 唔經 Referer/server log/歷史顯眼處）；`tripCtx` 仍兼容舊 `?t=`。
+- **F5**：`firestore.rules` invites collection 一律 deny（已無用）。
+- **F6**：state 寫入 rules 限定 section ∈ {itinerary,expenses,packing,meta} + 須 map（封垃圾 doc 灌 quota；client defensive validate 屬 #13 待續項）。
+- cloudMenu stopgap 加「連結=永久通行證收唔返」誠實告知；rules F5/F6/F8 已 deploy 雲端。
+- 驗證：node `--check` script PASS；tripCtx/fbInviteUrl round-trip（fragment-only/no-token/legacy-?t=/localStorage 四案）PASS；rules brace+F5/F6/F8 結構 PASS。⚠️ 真機 / 多帳號多機同步 **本環境無 browser 驗唔到 → 墨子 #14**。
+- sw v8→v9。**未做（#13 待續大件）**：UU 正式 sheets UX（多行程切換器/visibility deliberate confirm/同步狀態 UI/成員列表/JSON 匯出 prominence）、client snapshot defensive validate、內容定稿 7 條、Anonymous Auth console toggle（主公）。
+
 ## 2026-05-19 — 雲端共享啟用 #16（capability-URL 模型 B）
 
 - Firebase project `fukuoka-techo`（個人 account yuwaiho112@gmail.com、asia-east2/HK）建好；Web app + Firestore DB 起好。
