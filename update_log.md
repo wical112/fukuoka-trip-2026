@@ -1,5 +1,12 @@
 # 更新日誌 — 福岡・九州 旅遊手帳
 
+## 2026-05-19（後續3）— LIVE check：F6 delete 缺陷修正
+
+- **Live headless 驗證**（真 anon signUp + 直打 live Firestore）：F1 capability / F5 invites-deny / F6 section 白名單 / F8 createdBy-immutable + 正常可改 title + 無 world-list(F7) — **全部 live 守到**。Anon Auth 真 work。
+- 🐞 **Live check 揾到真缺陷**：F6 原 `request.resource.data is map` 套落 `allow write`，令 DELETE（無 resource.data）被擋 → 合法 member 清唔到 state doc（trip cleanup 會累積 orphan）。node 邏輯測測唔到，live 實測先現形。
+- **修正**：F6 拆 `allow create,update`（限4 section+map）vs `allow delete`（只 isMember）。已 redeploy + live 重驗 state delete 200 PASS。
+- 所有 test 資料已清（含一個 client 清唔到嘅 orphan，修 F6 後清除）。
+
 ## 2026-05-19（後續2）— 內容定稿：Philips 行前 7-gap 重查
 
 - 太宰府本殿釋疑：seed 6/18 改「本殿 2026-05-17 已重開、大改修完」，pack「行前查本殿」todo 釋除（✅ d:true）。

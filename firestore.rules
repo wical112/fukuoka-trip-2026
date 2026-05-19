@@ -42,9 +42,13 @@ service cloud.firestore {
       //      snapshot defensive validate，呢度封 schema 面。）
       match /state/{section} {
         allow read: if isMember(tripId);
-        allow write: if isMember(tripId)
+        // F6: create/update 限 4 known section + map；delete 唔可帶 map 條件
+        //     （delete 無 request.resource.data → 否則 legit member 清唔到 state，
+        //      live check 2026-05-19 實測揾到呢個缺陷）。
+        allow create, update: if isMember(tripId)
           && section in ['itinerary','expenses','packing','meta']
           && request.resource.data is map;
+        allow delete: if isMember(tripId);
       }
 
       // 以下 per-item 結構 = phase-2 normalize 先用（M3 完整 branch 之後）
