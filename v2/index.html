@@ -199,6 +199,42 @@
   /* 區段標題手帳手寫感 */
   .sum .big{font-variant-numeric:tabular-nums}
   .seg button.on .ic{filter:drop-shadow(0 2px 3px rgba(0,0,0,.15))}
+  /* 行程放相 */
+  .pstrip{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:10px 0 0;padding-bottom:2px}
+  .pstrip::-webkit-scrollbar{display:none}
+  .pthumb{flex:0 0 auto;width:78px;height:78px;border-radius:12px;object-fit:cover;
+    border:1px solid var(--line);box-shadow:var(--sh);position:relative;background:var(--bg)}
+  .padd{flex:0 0 auto;width:78px;height:78px;border-radius:12px;border:2px dashed var(--line);
+    display:grid;place-items:center;font-size:22px;color:var(--mut);background:var(--bg)}
+  .pwrap{flex:0 0 auto;position:relative}
+  .pwrap .x{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;
+    background:var(--now);color:#fff;font-size:13px;font-weight:900;border:0;display:grid;place-items:center}
+  .pv{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.92);display:none;
+    align-items:center;justify-content:center;padding:env(safe-area-inset-top,0) 10px}
+  .pv.on{display:flex} .pv img{max-width:100%;max-height:90vh;border-radius:10px}
+  .pv .c{position:absolute;top:calc(env(safe-area-inset-top,0) + 14px);right:18px;
+    color:#fff;font-size:30px;font-weight:300;background:none;border:0}
+  /* 同行：討論 + 投票 */
+  .ce{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px;
+    box-shadow:var(--sh);margin-bottom:12px}
+  .ce h4{font-size:13px;font-weight:800;margin:0 0 8px;color:var(--acc)}
+  .msg{display:flex;flex-direction:column;gap:2px;margin:0 0 9px}
+  .msg .who{font-size:11px;font-weight:800;color:var(--mut)}
+  .msg .bub{background:var(--bg);border:1px solid var(--line);border-radius:12px;
+    padding:8px 11px;font-size:13.5px;line-height:1.5;align-self:flex-start;max-width:88%;word-break:break-word}
+  .msg.mine .who{text-align:right;color:var(--acc)} .msg.mine .bub{align-self:flex-end;background:var(--acc-soft)}
+  .crow{display:flex;gap:8px;margin-top:6px}
+  .crow input{flex:1;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg);color:var(--ink);font-family:inherit}
+  .crow button{flex:0 0 auto;background:var(--acc);color:#fff;font-weight:800;font-size:13px;padding:0 16px;border-radius:999px}
+  .poll{border:1px solid var(--line);border-radius:13px;padding:12px;margin:9px 0;background:var(--bg)}
+  .poll .q{font-size:14px;font-weight:800;margin-bottom:8px}
+  .opt{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid var(--line);
+    border-radius:10px;margin:6px 0;background:var(--paper);font-size:13px;cursor:pointer;position:relative;overflow:hidden}
+  .opt .bar{position:absolute;left:0;top:0;bottom:0;background:var(--acc-soft);z-index:0}
+  .opt .lb,.opt .ct{position:relative;z-index:1}
+  .opt .lb{flex:1} .opt.v{border-color:var(--acc);font-weight:800}
+  .opt .ct{font-size:12px;color:var(--mut);font-weight:800}
+  .hintbox{text-align:center;color:var(--mut);font-size:13px;padding:30px 18px;line-height:1.8}
 </style>
 </head>
 <body>
@@ -219,6 +255,7 @@
   <section class="panel" id="p-exp"></section>
   <section class="panel" id="p-pack"></section>
   <section class="panel" id="p-link"></section>
+  <section class="panel" id="p-colab"></section>
   <footer>旅遊手帳 <b>v2</b> · 多行程 · 多用戶 · 每段可獨立分享<br>資料本機儲存；分享行程經 fukuoka-techo 雲端（capability-URL）</footer>
 </main>
 <nav class="seg" id="seg">
@@ -226,7 +263,10 @@
   <button data-p="exp"><span class="ic">💴</span>開支</button>
   <button data-p="pack"><span class="ic">🧳</span>打包</button>
   <button data-p="link"><span class="ic">🔗</span>連結</button>
+  <button data-p="colab"><span class="ic">💬</span>同行</button>
 </nav>
+<input type="file" id="pfi" accept="image/*" multiple hidden>
+<div class="pv" id="pv"><button class="c" id="pvC" aria-label="關閉">×</button><img id="pvI" alt="相片"></div>
 <div class="cbn" id="cbn">⚠ 離線中 — 改動會喺有網時自動上傳</div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="bk" data-x="close"></div><div class="pn" id="sheetP"></div></div>
 
@@ -508,6 +548,7 @@ function cloudSync(tid){
     lsS(DK(_id),JSON.stringify(S)); render();
     if(seeded[k]) toast("☁️ 行程已更新（同行者改咗）"); else seeded[k]=1; setCs("synced");
   },()=>{setCs("offline")}));
+  colabBind(tid);
 }
 async function activateCloud(){
   const e=idx().find(t=>t.id===_id); if(!e||!e.cloud){ CLOUD=false; setCs("off"); return; }
@@ -549,7 +590,7 @@ function render(){
     const md=(d.date||"").slice(5).replace("-","/");
     return `<button class="dp${i===sel?" on":""}${d.date===T?" today":""}" data-d="${i}"><div class="n">${md||("D"+(i+1))}</div><div class="w">${d.date?("週"+wd(d.date)):""}</div></button>`;
   }).join("")||'<div style="color:#fff;opacity:.7;font-size:12px;padding:6px">未有日子 — 撳標題開／揀行程</div>';
-  rTrip();rExp();rPack();rLink();
+  rTrip();rExp();rPack();rLink();rColab();
 }
 function rTrip(){
   const d=(S.days||[])[sel];
@@ -565,9 +606,32 @@ function rTrip(){
       <div class="sname">${esc(it.name)}</div>${it.loc?`<div class="sloc">📍 ${esc(it.loc)}</div>`:""}</div>
       <div class="chk" data-chk="${ix}" role="button" aria-label="完成">✓</div></div>
       ${it.info?`<div class="sinfo${tip?" tip":""}">${esc(it.info)}</div>`:""}
-      <div class="acts"><a class="pri" href="${mapA(q)}">🧭 Apple 導航</a><a href="${mapG(q)}">Google</a>${c}</div></div>`;
+      ${(it.photos&&it.photos.length)||true?`<div class="pstrip">${(it.photos||[]).map((src,pi)=>`<div class="pwrap"><img class="pthumb" src="${src}" data-pv="${ix}:${pi}" alt="相片">${EDIT?`<button class="x" data-pd="${ix}:${pi}" aria-label="刪相">×</button>`:""}</div>`).join("")}<button class="padd" data-ph="${ix}" aria-label="加相">📷</button></div>`:""}
+      <div class="acts"><a class="pri" href="${mapA(q)}">🧭 Apple 導航</a><a href="${mapG(q)}">Google</a>${c}${EDIT?`<button data-ie="${sel}:${ix}" style="border:1px solid var(--acc);color:var(--acc);background:var(--paper);font-weight:800;font-size:12px;padding:8px 13px;border-radius:999px">✎ 改</button><button data-id="${sel}:${ix}" style="border:1px solid var(--now);color:var(--now);background:var(--paper);font-weight:800;font-size:12px;padding:8px 13px;border-radius:999px">🗑</button>`:""}</div></div>`;
   }).join("");
+  if(EDIT) h+=`<button class="b" data-ia="${sel}">＋ 加行程點</button>
+    <button class="b" data-x="ed:days">📅 管理日子（增改刪排序）</button>
+    <button class="b" data-x="ed:meta">🧭 行程設定（名／日期／匯率／酒店）</button>`;
   document.getElementById("p-trip").innerHTML=h;
+}
+function itemForm(di,ix){
+  const ed=ix!=null; const it=ed?S.days[di].items[ix]:{id:uid(),kind:"spot",time:"",name:"",loc:"",cost:"",cur:"JPY",info:"",done:false};
+  const kopt=["spot","fly","move","food"].map(k=>`<option value="${k}"${it.kind===k?" selected":""}>${({spot:"📍 景點",fly:"✈️ 航班",move:"🚆 交通",food:"🍜 飲食"})[k]}</option>`).join("");
+  openSheet(`<div class="gb"></div><h3>${ed?"改":"加"}行程點</h3>
+    <label style="font-size:12px;color:var(--mut);font-weight:700">名稱</label>
+    <input class="inp" id="f_name" value="${esc(it.name)}" placeholder="例：太宰府天滿宮">
+    <label style="font-size:12px;color:var(--mut);font-weight:700">時間（可空）</label>
+    <input class="inp" id="f_time" value="${esc(it.time)}" placeholder="例：10:55-15:20">
+    <label style="font-size:12px;color:var(--mut);font-weight:700">類別</label>
+    <select class="inp" id="f_kind">${kopt}</select>
+    <label style="font-size:12px;color:var(--mut);font-weight:700">地點（導航用，可空）</label>
+    <input class="inp" id="f_loc" value="${esc(it.loc)}" placeholder="地址 / 地標">
+    <label style="font-size:12px;color:var(--mut);font-weight:700">花費 JPY（可空）</label>
+    <input class="inp" id="f_cost" value="${esc(it.cost)}" inputmode="numeric" placeholder="例：1200">
+    <label style="font-size:12px;color:var(--mut);font-weight:700">備註（可空）</label>
+    <textarea class="inp" id="f_info" rows="4" placeholder="交通／提醒／連結…">${esc(it.info)}</textarea>
+    <button class="b pri" data-x="fsave:${di}:${ed?ix:"new"}">儲存</button>
+    <button class="b" data-x="close">取消</button>`);
 }
 function rExp(){ let j=0;(S.days||[]).forEach(d=>d.items.forEach(it=>{if(it.cost)j+=Number(it.cost)||0}));
   (S.exp||[]).forEach(e=>j+=Number(e.amt)||0); const hk=Math.round(j*(S.rate||0.052));
@@ -575,6 +639,78 @@ function rExp(){ let j=0;(S.days||[]).forEach(d=>d.items.forEach(it=>{if(it.cost
    (S.days||[]).flatMap(d=>d.items.filter(it=>it.cost).map(it=>`<div class="li"><span style="flex:1">${esc(it.name)}<br><small style="color:var(--mut)">${d.date||""}</small></span><b style="color:var(--gold)">¥${Number(it.cost).toLocaleString()}</b></div>`)).join("")||(j?"":'<div class="li" style="justify-content:center;color:var(--mut)">未有金額</div>'); }
 function rPack(){ document.getElementById("p-pack").innerHTML=(S.pack||[]).map((p,i)=>`<div class="li${p.d?" dn":""}" data-pk="${i}"><span style="flex:1">${esc(p.t)}</span><div class="chk" style="${p.d?'background:var(--acc);border-color:var(--acc);color:#fff':''}">✓</div></div>`).join("")||'<div class="li" style="justify-content:center;color:var(--mut)">未有打包項</div>'; }
 function rLink(){ document.getElementById("p-link").innerHTML=(S.links||[]).map(l=>`<div class="li"><a href="${esc(l.url)}" target="_blank" rel="noopener">🔗 ${esc(l.label)}</a></div>`).join("")||'<div class="li" style="justify-content:center;color:var(--mut)">未有連結</div>'; }
+
+/* ── 放相（canvas 壓縮，存 item.photos；本機/雲端同步）── */
+let _phT=null;
+function compress(file){ return new Promise(res=>{
+  const r=new FileReader(); r.onload=()=>{ const im=new Image();
+    im.onload=()=>{ let{width:w,height:h}=im; const M=1280; if(w>M||h>M){ if(w>h){h=h*M/w;w=M}else{w=w*M/h;h=M} }
+      const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
+      cv.getContext("2d").drawImage(im,0,0,w,h); res(cv.toDataURL("image/jpeg",0.6)); };
+    im.onerror=()=>res(null); im.src=r.result; };
+  r.onerror=()=>res(null); r.readAsDataURL(file); }); }
+function addPhoto(di,ix){ _phT=[di,ix]; const fi=document.getElementById("pfi"); fi.value=""; fi.click(); }
+document.getElementById("pfi").addEventListener("change",async e=>{
+  if(!_phT) return; const [di,ix]=_phT; const it=S.days[di].items[ix]; it.photos=it.photos||[];
+  for(const f of [...e.target.files].slice(0,8-it.photos.length)){ const d=await compress(f); if(d)it.photos.push(d); }
+  _phT=null; save(); render(); toast("已加相"); });
+function viewPhoto(src){ document.getElementById("pvI").src=src; document.getElementById("pv").classList.add("on"); }
+function delPhoto(di,ix,pi){ if(!confirm("刪呢張相？"))return; S.days[di].items[ix].photos.splice(pi,1); save(); render(); }
+
+/* ── 同行：討論區 + 投票（共享行程；Firestore subcollection，member-gated）── */
+let _chat=[],_polls=[],_chU=null,_plU=null;
+function colabBind(tid){
+  try{if(_chU)_chU()}catch(e){} try{if(_plU)_plU()}catch(e){}
+  _chU=fbDb.collection("trips").doc(tid).collection("chat").orderBy("ts").limitToLast(200)
+    .onSnapshot(qs=>{ _chat=[]; qs.forEach(d=>_chat.push({id:d.id,...d.data()})); if(curPanel()==="colab")rColab(); },()=>{});
+  _plU=fbDb.collection("trips").doc(tid).collection("polls").orderBy("ts")
+    .onSnapshot(qs=>{ _polls=[]; qs.forEach(d=>_polls.push({id:d.id,...d.data()})); if(curPanel()==="colab")rColab(); },()=>{});
+}
+function curPanel(){ const b=document.querySelector("#seg button.on"); return b?b.dataset.p:"trip"; }
+async function sendMsg(){
+  const e=idx().find(t=>t.id===_id); if(!e||!e.cloud)return;
+  const i=document.getElementById("cin"); const tx=(i.value||"").trim(); if(!tx)return;
+  i.value=""; try{ await fbSign();
+    await fbDb.collection("trips").doc(e.cloud).collection("chat").add(
+      {uid:fbAu.currentUser.uid,name:me()||"我",text:tx.slice(0,800),
+       ts:firebase.firestore.FieldValue.serverTimestamp()}); }catch(err){ toast("傳送失敗"); }
+}
+async function newPoll(){
+  const e=idx().find(t=>t.id===_id); if(!e||!e.cloud){ toast("分享咗先可以投票"); return; }
+  const q=(prompt("投票問題：")||"").trim(); if(!q)return;
+  const raw=(prompt("選項（逗號分隔，例：拉麵, 燒肉, 壽司）：")||"").trim(); if(!raw)return;
+  const opts=raw.split(/[,，]/).map(s=>s.trim()).filter(Boolean).map(t=>({t,by:[]})); if(opts.length<2){toast("最少 2 個選項");return}
+  try{ await fbSign();
+    await fbDb.collection("trips").doc(e.cloud).collection("polls").add(
+      {q:q.slice(0,200),opts,by:me()||"我",ts:firebase.firestore.FieldValue.serverTimestamp()}); toast("已開投票"); }
+  catch(err){ toast("開投票失敗"); }
+}
+async function vote(pid,oi){
+  const e=idx().find(t=>t.id===_id); if(!e||!e.cloud)return;
+  try{ await fbSign(); const u=fbAu.currentUser.uid;
+    const ref=fbDb.collection("trips").doc(e.cloud).collection("polls").doc(pid);
+    await fbDb.runTransaction(async tx=>{ const s=await tx.get(ref); if(!s.exists)return; const d=s.data();
+      d.opts.forEach((o,i)=>{ o.by=(o.by||[]).filter(x=>x!==u); if(i===oi)o.by.push(u); });
+      tx.update(ref,{opts:d.opts}); }); }catch(err){ toast("投票失敗"); }
+}
+function rColab(){
+  const e=idx().find(t=>t.id===_id);
+  if(!e||!e.cloud){ document.getElementById("p-colab").innerHTML=
+    `<div class="ce"><div class="hintbox">💬 同行討論 + 投票<br>呢段行程<b>分享之後</b>，同行者就可以喺度傾邊度食、夾時間、開投票一齊決定。<br><br>撳頂部標題 ▾ →「分享」開共享行程。</div></div>`; return; }
+  const u=fbAu.currentUser&&fbAu.currentUser.uid;
+  let h=`<div class="ce"><h4>📊 投票</h4>`;
+  h+=_polls.length?_polls.map(p=>{ const tot=p.opts.reduce((s,o)=>s+((o.by||[]).length),0)||0;
+    return `<div class="poll"><div class="q">${esc(p.q)}<span style="font-size:11px;color:var(--mut);font-weight:600"> · ${esc(p.by||"")}</span></div>`+
+    p.opts.map((o,i)=>{ const n=(o.by||[]).length; const pct=tot?Math.round(n/tot*100):0; const mine=(o.by||[]).includes(u);
+      return `<div class="opt${mine?" v":""}" data-vote="${p.id}:${i}"><div class="bar" style="width:${pct}%"></div><span class="lb">${mine?"● ":"○ "}${esc(o.t)}</span><span class="ct">${n}（${pct}%）</span></div>`; }).join("")+`</div>`;
+  }).join(""):`<div style="color:var(--mut);font-size:13px;text-align:center;padding:8px">仲未有投票</div>`;
+  h+=`<button class="b" data-x="newpoll" style="margin-top:8px">＋ 開新投票</button></div>`;
+  h+=`<div class="ce"><h4>💬 討論</h4><div id="chatbox" style="max-height:46vh;overflow:auto">`+
+    (_chat.length?_chat.map(m=>`<div class="msg${m.uid===u?" mine":""}"><div class="who">${esc(m.name||"")}</div><div class="bub">${esc(m.text||"")}</div></div>`).join(""):`<div style="color:var(--mut);font-size:13px;text-align:center;padding:14px">講低第一句…</div>`)+
+    `</div><div class="crow"><input id="cin" placeholder="同行者一齊傾…" maxlength="800"><button data-x="csend">傳</button></div></div>`;
+  document.getElementById("p-colab").innerHTML=h;
+  const cb=document.getElementById("chatbox"); if(cb)cb.scrollTop=cb.scrollHeight;
+}
 
 /* ── sheets ── */
 function openSheet(html){ document.getElementById("sheetP").innerHTML=html;
@@ -617,6 +753,16 @@ async function sheetAct(x){
  try{
   if(x==="close"){closeSheet();return}
   if(x.indexOf("ed:")===0){ return edAct(x.slice(3)); }
+  if(x==="csend"){ return sendMsg(); }
+  if(x==="newpoll"){ return newPoll(); }
+  if(x.indexOf("fsave:")===0){ const pp=x.split(":"); const di=+pp[1], isNew=pp[2]==="new";
+    const g=id=>document.getElementById(id).value.trim();
+    const o={time:g("f_time"),name:g("f_name"),kind:document.getElementById("f_kind").value,
+      loc:g("f_loc"),cost:g("f_cost"),info:g("f_info")};
+    if(!o.name){ toast("請填名稱"); return; }
+    if(isNew){ S.days[di].items.push({id:uid(),cur:"JPY",done:false,...o}); }
+    else { Object.assign(S.days[di].items[+pp[2]],o); }
+    save(); render(); closeSheet(); toast("已儲存"); return; }
   if(x==="newseed"){ const id=newTrip(SEED); lsS(ACT,id); CLOUD=false; loadActive(); window._tch=0; closeSheet(); render(); toast("已由範本開新行程");return }
   if(x==="newempty"){ const tt=(prompt("行程名稱：","新行程")||"").trim(); if(!tt)return;
     const id=newTrip(null,tt); lsS(ACT,id); CLOUD=false; loadActive(); window._tch=0; closeSheet(); render(); toast("已開新空白行程");return }
@@ -647,6 +793,15 @@ document.addEventListener("click",e=>{
   if(sw){ const id=sw.dataset.sw; if(id!==_id){ lsS(ACT,id); CLOUD=false; setCs("off"); loadActive(); window._tch=0; render(); activateCloud(); } closeSheet(); return; }
   const sh=e.target.closest("[data-share]"); if(sh){ shareSheet(sh.dataset.share); return; }
   const cp=e.target.closest("[data-copy]"); if(cp){ copy(invUrl(cp.dataset.copy)); return; }
+  const ie=e.target.closest("[data-ie]"); if(ie){ const[a,b]=ie.dataset.ie.split(":"); itemForm(+a,+b); return; }
+  const ia=e.target.closest("[data-ia]"); if(ia){ itemForm(+ia.dataset.ia,null); return; }
+  const idd=e.target.closest("[data-id]"); if(idd){ const[a,b]=idd.dataset.id.split(":");
+    if(confirm("刪「"+S.days[+a].items[+b].name+"」？")){ S.days[+a].items.splice(+b,1); save(); render(); toast("已刪"); } return; }
+  const ph=e.target.closest("[data-ph]"); if(ph){ addPhoto(sel,+ph.dataset.ph); return; }
+  const pv=e.target.closest("[data-pv]"); if(pv){ const[a,b]=pv.dataset.pv.split(":"); viewPhoto(S.days[sel].items[+a].photos[+b]); return; }
+  const pd=e.target.closest("[data-pd]"); if(pd){ const[a,b]=pd.dataset.pd.split(":"); delPhoto(sel,+a,+b); return; }
+  if(e.target.closest("#pvC")||e.target.id==="pv"){ document.getElementById("pv").classList.remove("on"); return; }
+  const vt=e.target.closest("[data-vote]"); if(vt){ const[a,b]=vt.dataset.vote.split(":"); vote(a,+b); return; }
   const xx=e.target.closest("[data-x]"); if(xx){ sheetAct(xx.dataset.x); return; }
   if(e.target.closest("#brand")){ tripSheet(); return; }
   if(e.target.closest("#edit")){ EDIT=!EDIT; lsS("fk2_edit",EDIT?"1":"0");

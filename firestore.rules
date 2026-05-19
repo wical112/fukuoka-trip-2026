@@ -63,6 +63,9 @@ service cloud.firestore {
       }
       match /expenses/{expId}  { allow read, write: if isMember(tripId); }
       match /packing/{packId}  { allow read, write: if isMember(tripId); }
+      // v2 同行：討論 + 投票（member-gated，同 capability 模型一致）
+      match /chat/{m}   { allow read, write: if isMember(tripId); }
+      match /polls/{p}  { allow read, write: if isMember(tripId); }
     }
   }
 }
