@@ -90,3 +90,10 @@
 - 即時可開：https://fukuoka.wicalyu.com/v2/ 。功能：日 rail 切換、stop 完成勾選、開支 JPY→HKD 自動小計、打包勾選、連結。
 - 驗證：node --check PASS、headless render smoke PASS（8日/小計/匯率）。⚠️ 視覺/觸感真機未驗（本環境無 browser）→ 你開個 URL 即見；唔 work 我再修。
 - v2 北極星後續（presence 即時/真協作/地圖嵌入/journal 相）= post-trip 繼續，今次先交可見可用首版。
+
+## 2026-05-19（後續6）— 新 app 升 root（完整 CRUD + 多行程 + 多用戶 + 每段分享 + 手帳主題）
+
+- v2（多行程 registry / 顯示名多用戶 / 每段獨立 capability-URL 分享 / 完整 CRUD：行程設定·日子·行程點·開支·打包·連結 / UU 手帳主題：紙紋·和紙膠帶日tab·車票存根·DONE 印章）**升做 root**。
+- 舊 v11 完整保留喺 `/v1/`（旅程保命備份，icon/manifest/sw 齊）。
+- root `sw.js` VERSION → **v12**（殺 cache：之前「未見變化」真兇＝舊 SW serve 緊舊 shell）。
+- 驗證：node --check PASS、headless render PASS、root 確認係新 app、/v1/ 備份齊。⚠️ 真機視覺/2機同步未驗（無 browser）→ 開 URL 即見，SW 要一次 reload 先 serve 新版。
