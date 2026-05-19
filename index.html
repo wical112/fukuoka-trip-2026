@@ -259,9 +259,15 @@ function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
    load()/save()/boot 一行都冇郁；join flow / migration 係 M2 Step B/C。
    ⚠️ 主公：去 Firebase Console 開 project → 加 Web app → 將 config 貼落 FB_CFG。 */
 const TRIPKEY="fukuoka2026_trip";   // {tripId, token?} — 已 join 嘅 cloud trip
+// Firebase web config — 設計上 client-public（非 secret；安全靠 firestore.rules + capability-URL 模型）。
+// Project: fukuoka-techo（個人 account yuwaiho112@gmail.com，asia-east2/HK）。
 const FB_CFG = {
-  apiKey:"__FILL_ME__", authDomain:"__FILL_ME__", projectId:"__FILL_ME__",
-  storageBucket:"__FILL_ME__", messagingSenderId:"__FILL_ME__", appId:"__FILL_ME__"
+  apiKey:"AIzaSyCmmIQAhznF9spN9qkdvDjut-kRuDHqYiU",
+  authDomain:"fukuoka-techo.firebaseapp.com",
+  projectId:"fukuoka-techo",
+  storageBucket:"fukuoka-techo.firebasestorage.app",
+  messagingSenderId:"145010683915",
+  appId:"1:145010683915:web:441109671cf6d5bd0f570e"
 };
 function fbConfigured(){ return FB_CFG.apiKey && !FB_CFG.apiKey.startsWith("__"); }
 /* 有冇 cloud trip context：URL #join=token&t=tripId 或 之前 join 過 */

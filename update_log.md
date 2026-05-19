@@ -1,5 +1,14 @@
 # 更新日誌 — 福岡・九州 旅遊手帳
 
+## 2026-05-19 — 雲端共享啟用 #16（capability-URL 模型 B）
+
+- Firebase project `fukuoka-techo`（個人 account yuwaiho112@gmail.com、asia-east2/HK）建好；Web app + Firestore DB 起好。
+- `index.html` FB_CFG 填入真 config（Firebase web apiKey 設計上 client-public，非 secret）。
+- `firestore.rules` **F8 已 deploy 到雲端**（createdBy immutable + migrated 單向，Lucy #15）；加 `firebase.json` + `.firebaserc`。
+- sw.js VERSION v7→v8（index.html 改動）。
+- ⚠️ **未完（誠實）**：Anonymous Auth provider 試 Identity Toolkit API 兩次失敗（CONFIGURATION_NOT_FOUND — 全新 project Auth 未初始化，無 CLI/API 繞過）→ **需主公 Firebase Console 一個 toggle**：Console → fukuoka-techo → Authentication → Get started → Sign-in method → Anonymous → Enable。未開呢個，雲端登入會 fail（app 自動退單機，唔白屏）。
+- F1/F5/F6 + #13 client 重構（capability-URL 刪假 token、多行程 UX、同步狀態）未做 — 大 build 待續；雲端多用戶只能墨子 #14 真機驗。
+
 ## 2026-05-18（後續 2）— 安全 meta（Lucy 安全方案 T2-2）
 
 - `<head>` 加 `<meta name="robots" content="noindex">`（charter: unlisted）+ `<meta name="referrer" content="no-referrer">`。
