@@ -7,9 +7,9 @@
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
 <title>旅遊手帳 v2</title>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <style>
   :root{
     color-scheme: light dark;
@@ -235,6 +235,30 @@
   .opt .lb{flex:1} .opt.v{border-color:var(--acc);font-weight:800}
   .opt .ct{font-size:12px;color:var(--mut);font-weight:800}
   .hintbox{text-align:center;color:var(--mut);font-size:13px;padding:30px 18px;line-height:1.8}
+  /* 動畫／反應優化（進場 stagger + 面板切換 + skeleton） */
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes shimmer{0%{background-position:-180px 0}100%{background-position:180px 0}}
+  .panel.on{animation:rise .22s ease-out}
+  .stop,.li,.poll,.trow{animation:rise .26s ease-out both}
+  .stop{animation-delay:calc(var(--i,0) * 30ms)}
+  .li{animation-delay:calc(var(--i,0) * 18ms)}
+  .dp{transition:transform .14s cubic-bezier(.2,.7,.3,1),background-color .18s,color .18s,box-shadow .2s}
+  .panel{will-change:opacity,transform}
+  .sk{background:linear-gradient(90deg,var(--bg) 25%,var(--paper) 50%,var(--bg) 75%);
+    background-size:360px 100%;animation:shimmer 1.1s linear infinite;border-radius:12px;height:46px;margin:8px 0}
+  .pthumb,.msgimg{transition:transform .15s ease-out,opacity .2s}
+  .pthumb:active,.msgimg:active{transform:scale(.96)}
+  .msg .bub img.msgimg{display:block;max-width:240px;max-height:240px;border-radius:10px;margin-top:6px;cursor:zoom-in;object-fit:cover}
+  .cmprev{display:flex;align-items:center;gap:8px;background:var(--acc-soft);border:1px solid var(--acc);
+    border-radius:10px;padding:6px 10px;margin:6px 0;font-size:12px;font-weight:700;color:var(--acc)}
+  .cmprev img{width:36px;height:36px;border-radius:6px;object-fit:cover}
+  .cmprev button{background:none;color:var(--now);font-weight:900;font-size:16px}
+  .crow .att{background:var(--bg);border:1px solid var(--line);color:var(--ink);font-size:18px;padding:0 12px;border-radius:999px}
+  @media(prefers-reduced-motion:reduce){
+    .panel.on,.stop,.li,.poll,.trow{animation:none}
+    .pthumb,.msgimg,.dp{transition:none}
+    .sk{animation:none;background:var(--bg)}
+  }
 </style>
 </head>
 <body>
@@ -601,12 +625,12 @@ function rTrip(){
   if(sel===0&&S.hotel){ h+=`<div class="hotel"><span class="i">🏨</span><div class="m">${esc(S.hotel.name)}<small>${esc((S.hotel.stations&&S.hotel.stations[0])||S.hotel.addr||"")} · ☎ ${esc(S.hotel.tel||"")}</small></div><a class="go" href="${mapA(S.hotel.name+" "+(S.hotel.addr||""))}">導航</a></div>`; }
   h+=d.items.map((it,ix)=>{ const k=KIND[it.kind]||["spot","📍"]; const tip=/📋|⚠️|👉/.test(it.info||"");
     const q=it.loc||it.name; const c=it.cost?`<span class="cost">¥${Number(it.cost).toLocaleString()}</span>`:"";
-    return `<div class="stop${it.done?" done":""}" data-day="${sel}" data-ix="${ix}"><div class="srow">
+    return `<div class="stop${it.done?" done":""}" data-day="${sel}" data-ix="${ix}" style="--i:${ix}"><div class="srow">
       <div class="kd ${k[0]}">${k[1]}</div><div class="sbody">${it.time?`<div class="stime">${esc(it.time)}</div>`:""}
       <div class="sname">${esc(it.name)}</div>${it.loc?`<div class="sloc">📍 ${esc(it.loc)}</div>`:""}</div>
       <div class="chk" data-chk="${ix}" role="button" aria-label="完成">✓</div></div>
       ${it.info?`<div class="sinfo${tip?" tip":""}">${esc(it.info)}</div>`:""}
-      ${(it.photos&&it.photos.length)||true?`<div class="pstrip">${(it.photos||[]).map((src,pi)=>`<div class="pwrap"><img class="pthumb" src="${src}" data-pv="${ix}:${pi}" alt="相片">${EDIT?`<button class="x" data-pd="${ix}:${pi}" aria-label="刪相">×</button>`:""}</div>`).join("")}<button class="padd" data-ph="${ix}" aria-label="加相">📷</button></div>`:""}
+      <div class="pstrip">${(it.photos||[]).map((src,pi)=>`<div class="pwrap"><img class="pthumb" loading="lazy" decoding="async" src="${src}" data-pv="${ix}:${pi}" alt="相片">${EDIT?`<button class="x" data-pd="${ix}:${pi}" aria-label="刪相">×</button>`:""}</div>`).join("")}<button class="padd" data-ph="${ix}" aria-label="加相">📷</button></div>
       <div class="acts"><a class="pri" href="${mapA(q)}">🧭 Apple 導航</a><a href="${mapG(q)}">Google</a>${c}${EDIT?`<button data-ie="${sel}:${ix}" style="border:1px solid var(--acc);color:var(--acc);background:var(--paper);font-weight:800;font-size:12px;padding:8px 13px;border-radius:999px">✎ 改</button><button data-id="${sel}:${ix}" style="border:1px solid var(--now);color:var(--now);background:var(--paper);font-weight:800;font-size:12px;padding:8px 13px;border-radius:999px">🗑</button>`:""}</div></div>`;
   }).join("");
   if(EDIT) h+=`<button class="b" data-ia="${sel}">＋ 加行程點</button>
@@ -641,7 +665,7 @@ function rPack(){ document.getElementById("p-pack").innerHTML=(S.pack||[]).map((
 function rLink(){ document.getElementById("p-link").innerHTML=(S.links||[]).map(l=>`<div class="li"><a href="${esc(l.url)}" target="_blank" rel="noopener">🔗 ${esc(l.label)}</a></div>`).join("")||'<div class="li" style="justify-content:center;color:var(--mut)">未有連結</div>'; }
 
 /* ── 放相（canvas 壓縮，存 item.photos；本機/雲端同步）── */
-let _phT=null;
+let _phT=null,_phMode="stop",_chImg=null;
 function compress(file){ return new Promise(res=>{
   const r=new FileReader(); r.onload=()=>{ const im=new Image();
     im.onload=()=>{ let{width:w,height:h}=im; const M=1280; if(w>M||h>M){ if(w>h){h=h*M/w;w=M}else{w=w*M/h;h=M} }
@@ -649,10 +673,13 @@ function compress(file){ return new Promise(res=>{
       cv.getContext("2d").drawImage(im,0,0,w,h); res(cv.toDataURL("image/jpeg",0.6)); };
     im.onerror=()=>res(null); im.src=r.result; };
   r.onerror=()=>res(null); r.readAsDataURL(file); }); }
-function addPhoto(di,ix){ _phT=[di,ix]; const fi=document.getElementById("pfi"); fi.value=""; fi.click(); }
+function addPhoto(di,ix){ _phMode="stop"; _phT=[di,ix]; const fi=document.getElementById("pfi"); fi.value=""; fi.removeAttribute("capture"); fi.multiple=true; fi.click(); }
+function chPick(){ _phMode="chat"; const fi=document.getElementById("pfi"); fi.value=""; fi.removeAttribute("capture"); fi.multiple=false; fi.click(); }
 document.getElementById("pfi").addEventListener("change",async e=>{
+  const files=[...e.target.files]; if(!files.length) return;
+  if(_phMode==="chat"){ const d=await compress(files[0]); if(d){ _chImg=d; rColab(); toast("相已預備，撳『傳』發送"); } _phMode="stop"; return; }
   if(!_phT) return; const [di,ix]=_phT; const it=S.days[di].items[ix]; it.photos=it.photos||[];
-  for(const f of [...e.target.files].slice(0,8-it.photos.length)){ const d=await compress(f); if(d)it.photos.push(d); }
+  for(const f of files.slice(0,8-it.photos.length)){ const d=await compress(f); if(d)it.photos.push(d); }
   _phT=null; save(); render(); toast("已加相"); });
 function viewPhoto(src){ document.getElementById("pvI").src=src; document.getElementById("pv").classList.add("on"); }
 function delPhoto(di,ix,pi){ if(!confirm("刪呢張相？"))return; S.days[di].items[ix].photos.splice(pi,1); save(); render(); }
@@ -669,11 +696,16 @@ function colabBind(tid){
 function curPanel(){ const b=document.querySelector("#seg button.on"); return b?b.dataset.p:"trip"; }
 async function sendMsg(){
   const e=idx().find(t=>t.id===_id); if(!e||!e.cloud)return;
-  const i=document.getElementById("cin"); const tx=(i.value||"").trim(); if(!tx)return;
-  i.value=""; try{ await fbSign();
-    await fbDb.collection("trips").doc(e.cloud).collection("chat").add(
-      {uid:fbAu.currentUser.uid,name:me()||"我",text:tx.slice(0,800),
-       ts:firebase.firestore.FieldValue.serverTimestamp()}); }catch(err){ toast("傳送失敗"); }
+  const i=document.getElementById("cin"); const tx=(i.value||"").trim();
+  if(!tx && !_chImg)return;
+  i.value=""; const img=_chImg; _chImg=null;
+  try{ await fbSign();
+    const doc={uid:fbAu.currentUser.uid,name:me()||"我",text:tx.slice(0,800),
+      ts:firebase.firestore.FieldValue.serverTimestamp()};
+    if(img) doc.img=img;
+    await fbDb.collection("trips").doc(e.cloud).collection("chat").add(doc);
+    rColab();
+  }catch(err){ toast("傳送失敗：可能訊息過大（含相超 Firestore 1MB）"); _chImg=img; rColab(); }
 }
 async function newPoll(){
   const e=idx().find(t=>t.id===_id); if(!e||!e.cloud){ toast("分享咗先可以投票"); return; }
@@ -706,8 +738,8 @@ function rColab(){
   }).join(""):`<div style="color:var(--mut);font-size:13px;text-align:center;padding:8px">仲未有投票</div>`;
   h+=`<button class="b" data-x="newpoll" style="margin-top:8px">＋ 開新投票</button></div>`;
   h+=`<div class="ce"><h4>💬 討論</h4><div id="chatbox" style="max-height:46vh;overflow:auto">`+
-    (_chat.length?_chat.map(m=>`<div class="msg${m.uid===u?" mine":""}"><div class="who">${esc(m.name||"")}</div><div class="bub">${esc(m.text||"")}</div></div>`).join(""):`<div style="color:var(--mut);font-size:13px;text-align:center;padding:14px">講低第一句…</div>`)+
-    `</div><div class="crow"><input id="cin" placeholder="同行者一齊傾…" maxlength="800"><button data-x="csend">傳</button></div></div>`;
+    (_chat.length?_chat.map(m=>`<div class="msg${m.uid===u?" mine":""}"><div class="who">${esc(m.name||"")}</div><div class="bub">${m.text?esc(m.text):""}${m.img?`<img class="msgimg" loading="lazy" decoding="async" src="${m.img}" data-pvm="1" alt="相片">`:""}</div></div>`).join(""):`<div style="color:var(--mut);font-size:13px;text-align:center;padding:14px">講低第一句…可文字／附相</div>`)+
+    `</div>${_chImg?`<div class="cmprev"><img src="${_chImg}" alt="預覽"><span style="flex:1">相已預備 · 撳『傳』發送</span><button data-x="chimg-clear" aria-label="移除">×</button></div>`:""}<div class="crow"><button class="att" data-x="chimg-pick" aria-label="附相">📎</button><input id="cin" placeholder="同行者一齊傾…" maxlength="800"><button data-x="csend">傳</button></div></div>`;
   document.getElementById("p-colab").innerHTML=h;
   const cb=document.getElementById("chatbox"); if(cb)cb.scrollTop=cb.scrollHeight;
 }
@@ -755,6 +787,8 @@ async function sheetAct(x){
   if(x.indexOf("ed:")===0){ return edAct(x.slice(3)); }
   if(x==="csend"){ return sendMsg(); }
   if(x==="newpoll"){ return newPoll(); }
+  if(x==="chimg-pick"){ return chPick(); }
+  if(x==="chimg-clear"){ _chImg=null; rColab(); return; }
   if(x.indexOf("fsave:")===0){ const pp=x.split(":"); const di=+pp[1], isNew=pp[2]==="new";
     const g=id=>document.getElementById(id).value.trim();
     const o={time:g("f_time"),name:g("f_name"),kind:document.getElementById("f_kind").value,
@@ -801,6 +835,7 @@ document.addEventListener("click",e=>{
   const pv=e.target.closest("[data-pv]"); if(pv){ const[a,b]=pv.dataset.pv.split(":"); viewPhoto(S.days[sel].items[+a].photos[+b]); return; }
   const pd=e.target.closest("[data-pd]"); if(pd){ const[a,b]=pd.dataset.pd.split(":"); delPhoto(sel,+a,+b); return; }
   if(e.target.closest("#pvC")||e.target.id==="pv"){ document.getElementById("pv").classList.remove("on"); return; }
+  const pvm=e.target.closest("[data-pvm]"); if(pvm){ viewPhoto(pvm.getAttribute("src")); return; }
   const vt=e.target.closest("[data-vote]"); if(vt){ const[a,b]=vt.dataset.vote.split(":"); vote(a,+b); return; }
   const xx=e.target.closest("[data-x]"); if(xx){ sheetAct(xx.dataset.x); return; }
   if(e.target.closest("#brand")){ tripSheet(); return; }
@@ -822,8 +857,8 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape")closeSheet() });
 addEventListener("offline",()=>{ if(CLOUD)setCs("offline") });
 addEventListener("online",()=>{ if(CLOUD){setCs("syncing");setTimeout(()=>{if(CLOUD&&_cs!=="offline")setCs("synced")},1500)} });
 
-/* ── 入口：#t=<cloudTripId> 經連結加入該段共享行程 ── */
-(async function start(){
+/* ── 入口：#t=<cloudTripId> 經連結加入該段共享行程（等 defer firebase 載完先跑）── */
+async function start(){
   loadActive();
   const h=new URLSearchParams(location.hash.slice(1)); const jt=h.get("t");
   if(jt){
@@ -840,7 +875,11 @@ addEventListener("online",()=>{ if(CLOUD){setCs("syncing");setTimeout(()=>{if(CL
     }catch(err){ toast("加入失敗："+((err&&err.message)||err)) }
   } else { activateCloud(); }
   render();
-})();
+}
+// 先 render 一次（純本機，不依賴 firebase），確保即時可見；雲端待 defer 載完先啟動
+loadActive(); render();
+if(document.readyState==="complete") start();
+else addEventListener("load", start);
 </script>
 </body>
 </html>
