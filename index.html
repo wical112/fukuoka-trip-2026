@@ -633,9 +633,15 @@ function rTrip(){
       <div class="pstrip">${(it.photos||[]).map((src,pi)=>`<div class="pwrap"><img class="pthumb" loading="lazy" decoding="async" src="${src}" data-pv="${ix}:${pi}" alt="相片">${EDIT?`<button class="x" data-pd="${ix}:${pi}" aria-label="刪相">×</button>`:""}</div>`).join("")}<button class="padd" data-ph="${ix}" aria-label="加相">📷</button></div>
       <div class="acts"><a class="pri" href="${mapA(q)}">🧭 Apple 導航</a><a href="${mapG(q)}">Google</a>${c}${EDIT?`<button data-ie="${sel}:${ix}" style="border:1px solid var(--acc);color:var(--acc);background:var(--paper);font-weight:800;font-size:12px;padding:8px 13px;border-radius:999px">✎ 改</button><button data-id="${sel}:${ix}" style="border:1px solid var(--now);color:var(--now);background:var(--paper);font-weight:800;font-size:12px;padding:8px 13px;border-radius:999px">🗑</button>`:""}</div></div>`;
   }).join("");
-  if(EDIT) h+=`<button class="b" data-ia="${sel}">＋ 加行程點</button>
-    <button class="b" data-x="ed:days">📅 管理日子（增改刪排序）</button>
-    <button class="b" data-x="ed:meta">🧭 行程設定（名／日期／匯率／酒店）</button>`;
+  if(EDIT){
+    h+=`<button class="b" data-ia="${sel}">＋ 加行程點</button>
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <button class="b" data-x="dayedit:${sel}" style="margin:0;flex:1;min-width:130px">✎ 改本日資料</button>
+        ${S.days.length>1?`<button class="b warn" data-x="daydel:${sel}" style="margin:0">🗑 刪本日</button>`:""}
+        <button class="b" data-x="daynew" style="margin:0">＋ 加一日</button>
+      </div>
+      <button class="b" data-x="metaedit">🧭 行程設定（名／日期／匯率／酒店）</button>`;
+  }
   document.getElementById("p-trip").innerHTML=h;
 }
 function itemForm(di,ix){
@@ -657,12 +663,56 @@ function itemForm(di,ix){
     <button class="b pri" data-x="fsave:${di}:${ed?ix:"new"}">儲存</button>
     <button class="b" data-x="close">取消</button>`);
 }
-function rExp(){ let j=0;(S.days||[]).forEach(d=>d.items.forEach(it=>{if(it.cost)j+=Number(it.cost)||0}));
+function expForm(i){ const e=i==null?{name:"",amt:"",date:S.start||""}:S.exp[i]; openSheet(`<div class="gb"></div><h3>${i==null?"加":"改"}開支</h3>
+  <label style="font-size:12px;color:var(--mut);font-weight:700">項目</label><input class="inp" id="f_n" value="${esc(e.name)}" placeholder="例：拉麵">
+  <label style="font-size:12px;color:var(--mut);font-weight:700">金額 JPY</label><input class="inp" id="f_a" value="${esc(e.amt)}" inputmode="numeric" placeholder="例：1200">
+  <label style="font-size:12px;color:var(--mut);font-weight:700">日期</label><input class="inp" id="f_d" type="date" value="${esc(e.date||"")}">
+  <button class="b pri" data-x="expsave:${i==null?"new":i}">儲存</button><button class="b" data-x="close">取消</button>`); }
+function packForm(i){ const p=i==null?{t:""}:S.pack[i]; openSheet(`<div class="gb"></div><h3>${i==null?"加":"改"}打包項</h3>
+  <input class="inp" id="f_t" value="${esc(p.t)}" placeholder="例：護照／充電器">
+  <button class="b pri" data-x="packsave:${i==null?"new":i}">儲存</button><button class="b" data-x="close">取消</button>`); }
+function linkForm(i){ const l=i==null?{label:"",url:""}:S.links[i]; openSheet(`<div class="gb"></div><h3>${i==null?"加":"改"}連結</h3>
+  <label style="font-size:12px;color:var(--mut);font-weight:700">名稱</label><input class="inp" id="f_l" value="${esc(l.label)}" placeholder="例：HK Express 管理">
+  <label style="font-size:12px;color:var(--mut);font-weight:700">網址</label><input class="inp" id="f_u" value="${esc(l.url)}" type="url" placeholder="https://…">
+  <button class="b pri" data-x="linksave:${i==null?"new":i}">儲存</button><button class="b" data-x="close">取消</button>`); }
+function metaForm(){ const ho=S.hotel||{}; openSheet(`<div class="gb"></div><h3>🧭 行程設定</h3>
+  <label style="font-size:12px;color:var(--mut);font-weight:700">行程名稱</label><input class="inp" id="m_t" value="${esc(S.title||"")}">
+  <div style="display:flex;gap:8px"><div style="flex:1"><label style="font-size:12px;color:var(--mut);font-weight:700">開始</label><input class="inp" id="m_s" type="date" value="${esc(S.start||"")}"></div><div style="flex:1"><label style="font-size:12px;color:var(--mut);font-weight:700">結束</label><input class="inp" id="m_e" type="date" value="${esc(S.end||"")}"></div></div>
+  <label style="font-size:12px;color:var(--mut);font-weight:700">匯率 JPY→HKD</label><input class="inp" id="m_r" value="${esc(S.rate||0.052)}" inputmode="decimal">
+  <div style="border-top:1px solid var(--line);margin:10px 0;padding-top:8px;font-size:12px;color:var(--mut);font-weight:800">🏨 酒店（可空）</div>
+  <input class="inp" id="m_hn" value="${esc(ho.name||"")}" placeholder="酒店名"><input class="inp" id="m_ha" value="${esc(ho.addr||"")}" placeholder="地址"><input class="inp" id="m_ht" value="${esc(ho.tel||"")}" placeholder="電話"><input class="inp" id="m_hs" value="${esc((ho.stations||[]).join(", "))}" placeholder="最近車站（逗號分隔）">
+  <button class="b pri" data-x="msave">儲存</button><button class="b" data-x="close">取消</button>`); }
+function dayForm(di){ const isNew=di==null; const d=isNew?{date:"",title:""}:S.days[di];
+  openSheet(`<div class="gb"></div><h3>${isNew?"加新一日":"改本日資料"}</h3>
+  <label style="font-size:12px;color:var(--mut);font-weight:700">日期</label><input class="inp" id="d_d" type="date" value="${esc(d.date||"")}">
+  <label style="font-size:12px;color:var(--mut);font-weight:700">當日標題</label><input class="inp" id="d_t" value="${esc(d.title||"")}" placeholder="例：天神（到埗半日）">
+  <button class="b pri" data-x="dsave:${isNew?"new":di}">儲存</button><button class="b" data-x="close">取消</button>`); }
+const EBT=`border:1px solid var(--acc);color:var(--acc);background:var(--paper);font-weight:800;font-size:12px;padding:8px 13px;border-radius:999px;margin-left:6px`;
+const DBT=EBT.replace(/var\(--acc\)/g,"var(--now)");
+function rExp(){
+  let j=0;(S.days||[]).forEach(d=>d.items.forEach(it=>{if(it.cost)j+=Number(it.cost)||0}));
   (S.exp||[]).forEach(e=>j+=Number(e.amt)||0); const hk=Math.round(j*(S.rate||0.052));
-  document.getElementById("p-exp").innerHTML=`<div class="sum"><div class="big">¥${j.toLocaleString()}</div><div class="sm">≈ HK$${hk.toLocaleString()}（匯率 ${S.rate||0.052}）· 行程已標金額自動小計</div></div>`+
-   (S.days||[]).flatMap(d=>d.items.filter(it=>it.cost).map(it=>`<div class="li"><span style="flex:1">${esc(it.name)}<br><small style="color:var(--mut)">${d.date||""}</small></span><b style="color:var(--gold)">¥${Number(it.cost).toLocaleString()}</b></div>`)).join("")||(j?"":'<div class="li" style="justify-content:center;color:var(--mut)">未有金額</div>'); }
-function rPack(){ document.getElementById("p-pack").innerHTML=(S.pack||[]).map((p,i)=>`<div class="li${p.d?" dn":""}" data-pk="${i}"><span style="flex:1">${esc(p.t)}</span><div class="chk" style="${p.d?'background:var(--acc);border-color:var(--acc);color:#fff':''}">✓</div></div>`).join("")||'<div class="li" style="justify-content:center;color:var(--mut)">未有打包項</div>'; }
-function rLink(){ document.getElementById("p-link").innerHTML=(S.links||[]).map(l=>`<div class="li"><a href="${esc(l.url)}" target="_blank" rel="noopener">🔗 ${esc(l.label)}</a></div>`).join("")||'<div class="li" style="justify-content:center;color:var(--mut)">未有連結</div>'; }
+  let h=`<div class="sum"><div class="big">¥${j.toLocaleString()}</div><div class="sm">≈ HK$${hk.toLocaleString()}（匯率 ${S.rate||0.052}）· 行程＋手動 合併小計</div></div>`;
+  (S.exp||[]).forEach((e,i)=>{
+    h+=`<div class="li" style="--i:${i}"><span style="flex:1">${esc(e.name)}<br><small style="color:var(--mut)">${esc(e.date||"")} · 手動</small></span><b style="color:var(--gold)">¥${(+e.amt||0).toLocaleString()}</b>${EDIT?`<button data-eep="${i}" style="${EBT}">✎</button><button data-eed="${i}" style="${DBT}">🗑</button>`:""}</div>`;
+  });
+  (S.days||[]).forEach(d=>d.items.filter(it=>it.cost).forEach(it=>{
+    h+=`<div class="li" style="opacity:.88"><span style="flex:1">${esc(it.name)}<br><small style="color:var(--mut)">${d.date||""} · 來自行程點</small></span><b style="color:var(--gold)">¥${Number(it.cost).toLocaleString()}</b></div>`;
+  }));
+  if(!(S.exp&&S.exp.length) && !j) h+='<div class="li" style="justify-content:center;color:var(--mut)">未有金額</div>';
+  if(EDIT) h+=`<button class="b" data-x="expnew">＋ 加開支</button>`;
+  document.getElementById("p-exp").innerHTML=h;
+}
+function rPack(){
+  let h=(S.pack||[]).map((p,i)=>`<div class="li${p.d?" dn":""}" style="--i:${i}">${EDIT?`<span style="flex:1">${esc(p.t)}</span><button data-pep="${i}" style="${EBT}">✎</button><button data-ped="${i}" style="${DBT}">🗑</button>`:`<div data-pk="${i}" style="display:flex;align-items:center;gap:11px;flex:1"><span style="flex:1">${esc(p.t)}</span><div class="chk" style="${p.d?'background:var(--acc);border-color:var(--acc);color:#fff':''}">✓</div></div>`}</div>`).join("")||'<div class="li" style="justify-content:center;color:var(--mut)">未有打包項</div>';
+  if(EDIT) h+=`<button class="b" data-x="packnew">＋ 加項</button>`;
+  document.getElementById("p-pack").innerHTML=h;
+}
+function rLink(){
+  let h=(S.links||[]).map((l,i)=>`<div class="li" style="--i:${i}">${EDIT?`<span style="flex:1;font-weight:700;color:var(--acc)">🔗 ${esc(l.label)}</span><button data-lep="${i}" style="${EBT}">✎</button><button data-led="${i}" style="${DBT}">🗑</button>`:`<a href="${esc(l.url)}" target="_blank" rel="noopener">🔗 ${esc(l.label)}</a>`}</div>`).join("")||'<div class="li" style="justify-content:center;color:var(--mut)">未有連結</div>';
+  if(EDIT) h+=`<button class="b" data-x="linknew">＋ 加連結</button>`;
+  document.getElementById("p-link").innerHTML=h;
+}
 
 /* ── 放相（canvas 壓縮，存 item.photos；本機/雲端同步）── */
 let _phT=null,_phMode="stop",_chImg=null;
@@ -797,6 +847,40 @@ async function sheetAct(x){
     if(isNew){ S.days[di].items.push({id:uid(),cur:"JPY",done:false,...o}); }
     else { Object.assign(S.days[di].items[+pp[2]],o); }
     save(); render(); closeSheet(); toast("已儲存"); return; }
+  const G=id=>(document.getElementById(id)||{value:""}).value.trim();
+  if(x==="expnew"){ return expForm(null); }
+  if(x.indexOf("expedit:")===0){ return expForm(+x.slice(8)); }
+  if(x.indexOf("expsave:")===0){ const i=x.slice(8); const o={name:G("f_n"),amt:+G("f_a")||0,date:G("f_d")};
+    if(!o.name){toast("請填項目");return} S.exp=S.exp||[];
+    if(i==="new") S.exp.push({id:uid(),...o}); else Object.assign(S.exp[+i],o);
+    save();render();closeSheet();toast("已存");return; }
+  if(x==="packnew"){ return packForm(null); }
+  if(x.indexOf("packedit:")===0){ return packForm(+x.slice(9)); }
+  if(x.indexOf("packsave:")===0){ const i=x.slice(9); const t=G("f_t"); if(!t){toast("請填");return} S.pack=S.pack||[];
+    if(i==="new") S.pack.push({id:uid(),t,d:false}); else S.pack[+i].t=t;
+    save();render();closeSheet();toast("已存");return; }
+  if(x==="linknew"){ return linkForm(null); }
+  if(x.indexOf("linkedit:")===0){ return linkForm(+x.slice(9)); }
+  if(x.indexOf("linksave:")===0){ const i=x.slice(9); const lb=G("f_l"),u=G("f_u"); if(!lb||!u){toast("請填齊");return} S.links=S.links||[];
+    if(i==="new") S.links.push({id:uid(),label:lb,url:u}); else Object.assign(S.links[+i],{label:lb,url:u});
+    save();render();closeSheet();toast("已存");return; }
+  if(x==="metaedit"){ return metaForm(); }
+  if(x==="msave"){ S.title=G("m_t")||S.title; const s=G("m_s"),e2=G("m_e");
+    if(s)S.start=s; if(e2)S.end=e2; const r=+G("m_r"); if(!isNaN(r)&&r>0) S.rate=r;
+    const hn=G("m_hn"); if(hn){ S.hotel=S.hotel||{}; S.hotel.name=hn; S.hotel.addr=G("m_ha"); S.hotel.tel=G("m_ht");
+      const hs=G("m_hs"); S.hotel.stations=hs?hs.split(/[,，]/).map(s=>s.trim()).filter(Boolean):[];
+    } else S.hotel=null;
+    save();render();closeSheet();toast("已存");return; }
+  if(x==="daynew"){ return dayForm(null); }
+  if(x.indexOf("dayedit:")===0){ return dayForm(+x.slice(8)); }
+  if(x.indexOf("daydel:")===0){ const i=+x.slice(7); if(S.days.length<=1){toast("最少保留一日");return}
+    if(!confirm("刪「"+(S.days[i].title||S.days[i].date)+"」整日？")) return;
+    S.days.splice(i,1); if(sel>=S.days.length) sel=Math.max(0,S.days.length-1); save();render();toast("已刪本日");return; }
+  if(x.indexOf("dsave:")===0){ const i=x.slice(6); const dt=G("d_d"), tt=G("d_t")||"未命名";
+    if(!dt){toast("請填日期");return}
+    if(i==="new"){ S.days.push({date:dt,title:tt,items:[]}); S.days.sort((a,b)=>(a.date||"").localeCompare(b.date||"")); sel=S.days.findIndex(d=>d.date===dt); }
+    else { S.days[+i].date=dt; S.days[+i].title=tt; S.days.sort((a,b)=>(a.date||"").localeCompare(b.date||"")); sel=S.days.findIndex(d=>d.date===dt&&d.title===tt); if(sel<0)sel=0; }
+    save();render();closeSheet();toast("已存");return; }
   if(x==="newseed"){ const id=newTrip(SEED); lsS(ACT,id); CLOUD=false; loadActive(); window._tch=0; closeSheet(); render(); toast("已由範本開新行程");return }
   if(x==="newempty"){ const tt=(prompt("行程名稱：","新行程")||"").trim(); if(!tt)return;
     const id=newTrip(null,tt); lsS(ACT,id); CLOUD=false; loadActive(); window._tch=0; closeSheet(); render(); toast("已開新空白行程");return }
@@ -834,14 +918,19 @@ document.addEventListener("click",e=>{
   const ph=e.target.closest("[data-ph]"); if(ph){ addPhoto(sel,+ph.dataset.ph); return; }
   const pv=e.target.closest("[data-pv]"); if(pv){ const[a,b]=pv.dataset.pv.split(":"); viewPhoto(S.days[sel].items[+a].photos[+b]); return; }
   const pd=e.target.closest("[data-pd]"); if(pd){ const[a,b]=pd.dataset.pd.split(":"); delPhoto(sel,+a,+b); return; }
+  const eep=e.target.closest("[data-eep]"); if(eep){ return expForm(+eep.dataset.eep); }
+  const eed=e.target.closest("[data-eed]"); if(eed){ const i=+eed.dataset.eed; if(confirm("刪「"+(S.exp[i]&&S.exp[i].name||"")+"」？")){ S.exp.splice(i,1); save(); render(); toast("已刪"); } return; }
+  const pep=e.target.closest("[data-pep]"); if(pep){ return packForm(+pep.dataset.pep); }
+  const ped=e.target.closest("[data-ped]"); if(ped){ const i=+ped.dataset.ped; if(confirm("刪「"+(S.pack[i]&&S.pack[i].t||"")+"」？")){ S.pack.splice(i,1); save(); render(); toast("已刪"); } return; }
+  const lep=e.target.closest("[data-lep]"); if(lep){ return linkForm(+lep.dataset.lep); }
+  const led=e.target.closest("[data-led]"); if(led){ const i=+led.dataset.led; if(confirm("刪「"+(S.links[i]&&S.links[i].label||"")+"」？")){ S.links.splice(i,1); save(); render(); toast("已刪"); } return; }
   if(e.target.closest("#pvC")||e.target.id==="pv"){ document.getElementById("pv").classList.remove("on"); return; }
   const pvm=e.target.closest("[data-pvm]"); if(pvm){ viewPhoto(pvm.getAttribute("src")); return; }
   const vt=e.target.closest("[data-vote]"); if(vt){ const[a,b]=vt.dataset.vote.split(":"); vote(a,+b); return; }
   const xx=e.target.closest("[data-x]"); if(xx){ sheetAct(xx.dataset.x); return; }
   if(e.target.closest("#brand")){ tripSheet(); return; }
-  if(e.target.closest("#edit")){ EDIT=!EDIT; lsS("fk2_edit",EDIT?"1":"0");
-    document.getElementById("edl").textContent=EDIT?"✓ 編輯中":"✎ 編輯";
-    if(EDIT) editHub(); else closeSheet(); return; }
+  if(e.target.closest("#edit")){ EDIT=!EDIT; lsS("fk2_edit",EDIT?"1":"0"); render();
+    toast(EDIT?"進入編輯：每張卡有 ✎/🗑/＋":"離開編輯"); return; }
   if(e.target.closest("#pres")){ const n=(prompt("你嘅顯示名（共享行程時同行者會見到）：",me())||"").trim(); if(n){lsS(ME,n.slice(0,40));render();toast("已設定顯示名")} return; }
   const dp=e.target.closest("[data-d]");
   if(dp){ window._tch=1; sel=+dp.dataset.d; render(); document.getElementById("p-trip").scrollIntoView({behavior:"smooth",block:"start"}); return; }
