@@ -1,5 +1,20 @@
 # 更新日誌 — 福岡・九州 旅遊手帳
 
+## 2026-05-26 — Handbook 自文檔 Workflow Canvas
+
+- **目的**：用主公新整嘅 generic flow-canvas template 為 handbook PWA 自身畫 sitemap + 內部模組圖（協作 / review / demo 用），唔影響 live handbook。
+- **成品**：`handbook_flow_canvas.json`（34KB · 71 nodes · 59 edges · 5 flows）— 預備好畀 `~/flow-canvas/flow-canvas.html?p=fukuoka_handbook` 匯入。
+- **5 個 flow tab**：
+  1. 📱 頁面結構（12 nodes）— App Shell / Header / Date Rail / Hero / 5 tabs / Bottom Sheet / Trip Switcher / Settings
+  2. 🎯 功能 / CRUD（15 nodes）— Itinerary CRUD / Photo compress / 導航 deeplink / 開支 aggregate / Packing / Chat / Poll / Trip share / JSON export 等
+  3. 🧭 User Journey（18 nodes · 4 flows）— A: 旅程中首次開 / B: 編輯 / C: Pre-trip share / D: On-trip 同行協作
+  4. 💾 Data Model（12 nodes）— Trip / Day / Stop / Expense / Link / PackItem / User / ChatMsg / Poll + 3 storage layer buckets
+  5. ☁️ Sync & Collaboration（14 nodes）— Capability URL / Firebase anon / onSnapshot / Diff write / SECT / Offline / Rules F1/F4/F5/F6 / Reshare gap
+- **Pivot 記錄**：本來 fork BD ESH canvas v2，途中發現主公啱啱整咗 generic template（`~/flow-canvas/`，per MEMORY），即刻轉用，orphan fork 已刪。
+- **Node schema 沿用 ESH/template 原樣**：`actor`/`system`/`statutory`/`source` field 重新詮釋為 scope / storage layer / file_ref / source。SYS chip 仍係 BD-flavored (ESS/EPS/...) → handbook 用 Local/Cloud/SW/Mem，chip 顯示字但 fallback 灰色，唔影響可讀。
+- **驗證**：JSON parsed clean；5 個 file_ref spot-check 對返 `index.html:49-52` (.pres)、`:54-61` (.drail)、`:64-70` (.hero)、`sw.js:4` (VERSION) — 真實存在。Template 喺 default browser 開咗 `?p=fukuoka_handbook` 等匯入。
+- **唔影響**：handbook live (`fukuoka.wicalyu.com`) `index.html` / `sw.js` / `manifest.webmanifest` 一個 byte 都無郁。
+
 ## 2026-05-19（後續4）— 雲端共享 UX 成品（取代 stopgap）
 
 - **成品**：bottom-sheet 共享 UX 取代舊 confirm/prompt stopgap。涵蓋：開共享/經連結加入(顯示名)/複製邀請連結+常駐「永久全權收唔返」誠實告知/成員 live 列表(無造假權限)/「重開新行程換 ID」逃生門(capability 唯一 de-facto revoke)/離開共享/JSON 匯出 prominence + 「雲端非備份」提示。
