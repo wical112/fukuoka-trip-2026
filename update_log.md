@@ -1,6 +1,16 @@
 # 更新日誌 — 福岡・九州 旅遊手帳
 
-## 2026-05-26 — Handbook 自文檔 Workflow Canvas
+## 2026-06-14 — 🎵 福岡音樂之夜（夜晚 live house／爵士整合）
+
+- **目的**：主公旅途中想體驗日本音樂文化；研究天神・大名・今泉 live house 重鎮 + 中洲爵士吧，整合入手帳 6/15、6/19 兩晚。
+- **成品（SEED 新增）**：
+  - **6/15（一）**「🎵 夜晚音樂（可選・爵士之夜）」item — 主推 Trombone Club（中洲・每晚生爵士 21:00/22:00・週日休・¥1000 charge）＋ Browny；導航 loc 設 Trombone Club。週一大場多休故主打爵士。
+  - **6/19（五）**「🎵 夜晚音樂（可選・Live House 之夜）」item — 查實當晚實演：ミニマムジーク@Queblick／MADDOGS@OP's／シャッポ@the voodoo lounge／Neighbors Complain@INSA／WANIMA@福岡サンパレス；導航 loc 設 Queblick（今泉）。
+  - **連結頁**新增 3 條：eplus 福岡 live house 查詢 / LivePocket 福岡購票 / Trombone Club 官網。
+- **研究來源**：bushikaku（6/19 實演表）、ontaq.jp（確認 TENJIN ONTAQ 係 3 月、今次冇份）、trb-club（爵士時間/收費）、各場官網。
+- **驗證**：`node` eval SEED parsed OK（8 日 / 9 連結 / 6-15、6-19 各 2 items）；v2/index.html 已鏡像（與 root identical）；sw v15→**v16-2026-06-14**。
+- **⚠️ localStorage seed-once 限制**：SEED 只喺首次開 app（`idx().length===0`）寫入本機，無 migration → **主公而家部手機（6/13 已 seed）唔會自動出現呢兩個 item**。要落部機：app 內 ✎ 編輯 → 管理行程點手動加，或新建行程套範本。即時用：直接撳本對話提供嘅 Google Maps 連結。
+- **唔影響**：CRUD / 雲端 / 同步邏輯一律無郁，純 SEED 內容 + 連結 + sw bump。
 
 - **目的**：用主公新整嘅 generic flow-canvas template 為 handbook PWA 自身畫 sitemap + 內部模組圖（協作 / review / demo 用），唔影響 live handbook。
 - **成品**：`handbook_flow_canvas.json`（34KB · 71 nodes · 59 edges · 5 flows）— 預備好畀 `~/flow-canvas/flow-canvas.html?p=fukuoka_handbook` 匯入。

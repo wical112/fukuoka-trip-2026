@@ -1,0 +1,1367 @@
+{
+  "title": "🗾 Fukuoka Handbook 流程 Canvas",
+  "flows": [
+    {
+      "id": "pages",
+      "name": "① 📱 頁面結構"
+    },
+    {
+      "id": "features",
+      "name": "② 🎯 功能 / CRUD"
+    },
+    {
+      "id": "journey",
+      "name": "③ 🧭 User Journey"
+    },
+    {
+      "id": "data",
+      "name": "④ 💾 Data Model"
+    },
+    {
+      "id": "sync",
+      "name": "⑤ ☁️ Sync & Collaboration"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "PG1",
+      "flow": "pages",
+      "code": "P-01",
+      "title": "📦 App Shell (PWA)",
+      "kind": "terminal",
+      "actor": "view",
+      "system": "SW",
+      "conf": "verified",
+      "desc": "index.html + manifest.webmanifest + sw.js v15-2026-05-20。display:standalone、theme-color #0f4c45、cache-first 預取 app shell、network 失敗 fallback cached index.html。",
+      "statutory": "sw.js:4 · manifest.webmanifest:1-14",
+      "source": "research §1",
+      "x": 600,
+      "y": 40
+    },
+    {
+      "id": "PG2",
+      "flow": "pages",
+      "code": "P-02",
+      "title": "🎯 Header",
+      "kind": "step",
+      "actor": "view",
+      "system": "Mem",
+      "conf": "verified",
+      "desc": "Trip 標題 + 同步狀態 pill（.pres dot：綠=已同步 / 黃=同步中 / 紅=離線）+ ✎ 編輯 toggle + ▾ 我的行程。",
+      "statutory": "index.html:49-52",
+      "source": "research §2",
+      "x": 260,
+      "y": 220
+    },
+    {
+      "id": "PG3",
+      "flow": "pages",
+      "code": "P-03",
+      "title": "📅 Date Rail (.drail)",
+      "kind": "step",
+      "actor": "view",
+      "system": "Mem",
+      "conf": "verified",
+      "desc": "水平滾動 pill：MM/DD + 星期幾。今日有金色 dot（.dp.today::after），選中底色白 + scale。",
+      "statutory": "index.html:54-61",
+      "source": "research §2",
+      "x": 520,
+      "y": 220
+    },
+    {
+      "id": "PG4",
+      "flow": "pages",
+      "code": "P-04",
+      "title": "🌅 Hero",
+      "kind": "step",
+      "actor": "view",
+      "system": "Mem",
+      "conf": "verified",
+      "desc": "標籤『今日 / Day X』+ 主題 + 日期 + 項目數。Day 1 sticky hotel widget（名稱 / 最近車站 / 導航 button）。",
+      "statutory": "index.html:64-70",
+      "source": "research §2",
+      "x": 780,
+      "y": 220
+    },
+    {
+      "id": "PG5",
+      "flow": "pages",
+      "code": "P-05",
+      "title": "🗺️ 行程 tab",
+      "kind": "step",
+      "actor": "view",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "主視圖：日 × stop 卡（time / loc / kind emoji / info / photos）。auto-jump 今日；tap 卡開 bottom-sheet。",
+      "statutory": "index.html:285",
+      "source": "research §2",
+      "x": 120,
+      "y": 420
+    },
+    {
+      "id": "PG6",
+      "flow": "pages",
+      "code": "P-06",
+      "title": "💴 開支 tab",
+      "kind": "step",
+      "actor": "view",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "總額 JPY + HKD 匯率轉換 + 逐項 list。自動匯集 itinerary stops.cost + manual 開支。",
+      "statutory": "index.html:286",
+      "source": "research §2",
+      "x": 340,
+      "y": 420
+    },
+    {
+      "id": "PG7",
+      "flow": "pages",
+      "code": "P-07",
+      "title": "🧳 打包 tab",
+      "kind": "step",
+      "actor": "view",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "Checklist toggle done。Edit mode 可加/刪。Seed 含旅程提醒（如『預訂 由布院 train 提前 1 個月』）。",
+      "statutory": "index.html:287",
+      "source": "research §2",
+      "x": 560,
+      "y": 420
+    },
+    {
+      "id": "PG8",
+      "flow": "pages",
+      "code": "P-08",
+      "title": "🔗 連結 tab",
+      "kind": "step",
+      "actor": "view",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "Bookmark 外部資源（機票 / 交通 / 酒店 / 天氣 / 神社）。tap 開新 tab。",
+      "statutory": "index.html:288",
+      "source": "research §2",
+      "x": 780,
+      "y": 420
+    },
+    {
+      "id": "PG9",
+      "flow": "pages",
+      "code": "P-09",
+      "title": "💬 同行 tab",
+      "kind": "step",
+      "actor": "view",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "僅當 cloud-shared trip：real-time chat + poll 投票（bar chart）。離線藏 tab。",
+      "statutory": "index.html:289-290",
+      "source": "research §2",
+      "x": 1000,
+      "y": 420
+    },
+    {
+      "id": "PG10",
+      "flow": "pages",
+      "code": "P-10",
+      "title": "⛏ Bottom Sheet（編輯）",
+      "kind": "step",
+      "actor": "edit",
+      "system": "Mem",
+      "conf": "verified",
+      "desc": "Inline form：name / time / kind / loc / cost / info。儲存 = 即時 render + localStorage 寫入。",
+      "statutory": "index.html:285+",
+      "source": "research §3 flow B",
+      "x": 340,
+      "y": 640
+    },
+    {
+      "id": "PG11",
+      "flow": "pages",
+      "code": "P-11",
+      "title": "🗂 Trip Switcher",
+      "kind": "step",
+      "actor": "view",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "▾ 我的行程 sheet：切換 / 新增 / rename / 刪除 trip。新增可由 Fukuoka template 或空白 seed。",
+      "statutory": "fk2_idx in localStorage",
+      "source": "research §3 features 16-17",
+      "x": 120,
+      "y": 640
+    },
+    {
+      "id": "PG12",
+      "flow": "pages",
+      "code": "P-12",
+      "title": "⚙️ Settings",
+      "kind": "note",
+      "actor": "edit",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "Trip metadata：title / start / end / JPY→HKD rate / hotel (name/addr/tel/stations) / fk2_me 我嘅名。",
+      "statutory": "index.html SEED:307-393",
+      "source": "research §4",
+      "x": 560,
+      "y": 640
+    },
+    {
+      "id": "F1",
+      "flow": "features",
+      "code": "F-01",
+      "title": "➕✎🗑 Itinerary CRUD",
+      "kind": "step",
+      "actor": "edit",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "Stop 增 / 改 / 刪。Bottom-sheet form：name / time / kind / loc / cost / info / photos。Save → localStorage fk2_t:<id>。",
+      "statutory": "index.html SEED.days[].items",
+      "source": "research §3",
+      "x": 180,
+      "y": 40
+    },
+    {
+      "id": "F2",
+      "flow": "features",
+      "code": "F-02",
+      "title": "📷 Photo upload + 壓縮",
+      "kind": "step",
+      "actor": "edit",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "Canvas drawImage → max 1280px → JPEG quality 0.6 → data URL → push stops[].photos[]。Lazy load 縮圖、fullscreen viewer。",
+      "statutory": "compress() helper",
+      "source": "research §3 feature 6",
+      "x": 420,
+      "y": 40
+    },
+    {
+      "id": "F3",
+      "flow": "features",
+      "code": "F-03",
+      "title": "🧭 Apple Maps deeplink",
+      "kind": "step",
+      "actor": "view",
+      "system": "External",
+      "conf": "verified",
+      "desc": "Stop.loc → `maps://?q=<URL-encoded>` 開 native Apple Maps；Android fallback 用 Google Maps。",
+      "statutory": "index.html stop card render",
+      "source": "research §3 flow A",
+      "x": 660,
+      "y": 40
+    },
+    {
+      "id": "F4",
+      "flow": "features",
+      "code": "F-04",
+      "title": "✅ Done toggle",
+      "kind": "step",
+      "actor": "edit",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "Stop done=true → checkmark scale-up animation；exp 計算唔受影響。",
+      "statutory": "stop.done in SEED",
+      "source": "research §3",
+      "x": 900,
+      "y": 40
+    },
+    {
+      "id": "F5",
+      "flow": "features",
+      "code": "F-05",
+      "title": "📍 Auto-jump-to-today",
+      "kind": "step",
+      "actor": "view",
+      "system": "Mem",
+      "conf": "verified",
+      "desc": "App 開啟：device date → 揀對應 day index → drail scroll + hero render。如過期或未開始就 fallback 第一日。",
+      "statutory": "index.html drail logic",
+      "source": "research §3 flow A",
+      "x": 1140,
+      "y": 40
+    },
+    {
+      "id": "F6",
+      "flow": "features",
+      "code": "F-06",
+      "title": "💴 開支 auto-aggregate",
+      "kind": "step",
+      "actor": "view",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "Σ stops.cost (JPY) + Σ manual exp.amt → total。匯率 trip.rate → HKD 顯示。source label：『行程』vs『手動』。",
+      "statutory": "exp render in index.html",
+      "source": "research §3 feature 7-9",
+      "x": 180,
+      "y": 260
+    },
+    {
+      "id": "F7",
+      "flow": "features",
+      "code": "F-07",
+      "title": "✏️ Manual expense",
+      "kind": "step",
+      "actor": "edit",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "{name, amt JPY, date} push trip.exp[]。Edit / delete inline。",
+      "statutory": "trip.exp model",
+      "source": "research §3",
+      "x": 420,
+      "y": 260
+    },
+    {
+      "id": "F8",
+      "flow": "features",
+      "code": "F-08",
+      "title": "💱 匯率 rate",
+      "kind": "step",
+      "actor": "edit",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "Trip.rate（default 0.052）editable in Settings。即時 re-compute HKD 列。",
+      "statutory": "trip.rate in SEED",
+      "source": "research §3 feature 9",
+      "x": 660,
+      "y": 260
+    },
+    {
+      "id": "F9",
+      "flow": "features",
+      "code": "F-09",
+      "title": "🧳 Packing toggle",
+      "kind": "step",
+      "actor": "edit",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "PackItem.d toggle；edit mode 可加/刪/改 t。",
+      "statutory": "trip.pack[]",
+      "source": "research §3 features 11-13",
+      "x": 900,
+      "y": 260
+    },
+    {
+      "id": "F10",
+      "flow": "features",
+      "code": "F-10",
+      "title": "🔗 Link bookmark",
+      "kind": "step",
+      "actor": "edit",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "{label, url} CRUD；tap 開 target=_blank。",
+      "statutory": "trip.links[]",
+      "source": "research §3 feature 14",
+      "x": 1140,
+      "y": 260
+    },
+    {
+      "id": "F11",
+      "flow": "features",
+      "code": "F-11",
+      "title": "💬 Chat 訊息",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "Text ≤ 800 字 + 可附壓縮圖片。寫 Firestore `trips/{tripId}/chat`，server timestamp。",
+      "statutory": "Firestore chat collection",
+      "source": "research §3 feature 20",
+      "x": 180,
+      "y": 480
+    },
+    {
+      "id": "F12",
+      "flow": "features",
+      "code": "F-12",
+      "title": "📊 Poll 投票",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "{q, opts[{t, by[]}]} 多選；vote 用 runTransaction 避免併發踩 conflict。Bar chart 即時 update。",
+      "statutory": "Firestore polls collection",
+      "source": "research §3 feature 21",
+      "x": 420,
+      "y": 480
+    },
+    {
+      "id": "F13",
+      "flow": "features",
+      "code": "F-13",
+      "title": "🔄 Trip 共享 / 取消共享",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "共享 = cloudCreate() → 取得 tripId → 寫 Firestore + 取 capability URL → copy clipboard。取消 = leave members。",
+      "statutory": "cloudCreate() / unshare",
+      "source": "research §3 features 19/23",
+      "x": 660,
+      "y": 480
+    },
+    {
+      "id": "F14",
+      "flow": "features",
+      "code": "F-14",
+      "title": "💾 JSON 匯出 / 匯入",
+      "kind": "step",
+      "actor": "edit",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "Backup 全 trip JSON download；import 解析後 overwrite。",
+      "statutory": "README:20",
+      "source": "research §3 feature 30",
+      "x": 900,
+      "y": 480
+    },
+    {
+      "id": "F15",
+      "flow": "features",
+      "code": "F-15",
+      "title": "🌗 Theme (auto)",
+      "kind": "note",
+      "actor": "view",
+      "system": "Mem",
+      "conf": "verified",
+      "desc": "Prefers-color-scheme media query 自動 flip CSS vars，無 manual toggle。",
+      "statutory": "index.html:22",
+      "source": "research §6",
+      "x": 1140,
+      "y": 480
+    },
+    {
+      "id": "JA1",
+      "flow": "journey",
+      "code": "A-01",
+      "title": "🚀 開啟 fukuoka.wicalyu.com",
+      "kind": "terminal",
+      "actor": "view",
+      "system": "SW",
+      "conf": "verified",
+      "desc": "Flow A — Local-only：SW 從 cache 出 app shell；localStorage 載 seed Fukuoka trip。",
+      "statutory": "sw.js cache-first",
+      "source": "research §5 Flow A",
+      "x": 80,
+      "y": 40
+    },
+    {
+      "id": "JA2",
+      "flow": "journey",
+      "code": "A-02",
+      "title": "📍 Today auto-highlight",
+      "kind": "step",
+      "actor": "view",
+      "system": "Mem",
+      "conf": "verified",
+      "desc": "Device date → 揀 day index → drail scroll + hero render。",
+      "statutory": "drail logic",
+      "source": "research §5 Flow A",
+      "x": 80,
+      "y": 200
+    },
+    {
+      "id": "JA3",
+      "flow": "journey",
+      "code": "A-03",
+      "title": "👆 Tap stop card",
+      "kind": "step",
+      "actor": "view",
+      "system": "Mem",
+      "conf": "verified",
+      "desc": "點活動卡 → 展開時間 / 地點 / info / photos。",
+      "statutory": "stop render",
+      "source": "research §5 Flow A",
+      "x": 80,
+      "y": 360
+    },
+    {
+      "id": "JA4",
+      "flow": "journey",
+      "code": "A-04",
+      "title": "🧭 Apple 導航",
+      "kind": "terminal",
+      "actor": "view",
+      "system": "External",
+      "conf": "verified",
+      "desc": "Tap 🧭 → open Apple Maps deeplink。",
+      "statutory": "loc deeplink",
+      "source": "research §5 Flow A",
+      "x": 80,
+      "y": 520
+    },
+    {
+      "id": "JB1",
+      "flow": "journey",
+      "code": "B-01",
+      "title": "✎ 點編輯",
+      "kind": "step",
+      "actor": "edit",
+      "system": "Mem",
+      "conf": "verified",
+      "desc": "Flow B — Editing：top-right ✎ toggle → 所有卡顯示 ✎ / 🗑 / ＋。",
+      "statutory": "fk2_edit in localStorage",
+      "source": "research §5 Flow B",
+      "x": 380,
+      "y": 40
+    },
+    {
+      "id": "JB2",
+      "flow": "journey",
+      "code": "B-02",
+      "title": "⛏ Bottom sheet 開",
+      "kind": "step",
+      "actor": "edit",
+      "system": "Mem",
+      "conf": "verified",
+      "desc": "點 ✎ on stop → bottom-sheet form。",
+      "statutory": "bottom-sheet",
+      "source": "research §5 Flow B",
+      "x": 380,
+      "y": 200
+    },
+    {
+      "id": "JB3",
+      "flow": "journey",
+      "code": "B-03",
+      "title": "💾 儲存 → localStorage",
+      "kind": "step",
+      "actor": "edit",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "Save → state.days[].items update → JSON.stringify → fk2_t:<id>。",
+      "statutory": "persist() helper",
+      "source": "research §5 Flow B",
+      "x": 380,
+      "y": 360
+    },
+    {
+      "id": "JB4",
+      "flow": "journey",
+      "code": "B-04",
+      "title": "🔄 Render 即時 update",
+      "kind": "terminal",
+      "actor": "view",
+      "system": "Mem",
+      "conf": "verified",
+      "desc": "Re-render day → toast『已儲存』。",
+      "statutory": "renderAll()",
+      "source": "research §5 Flow B",
+      "x": 380,
+      "y": 520
+    },
+    {
+      "id": "JC1",
+      "flow": "journey",
+      "code": "C-01",
+      "title": "💻 桌面填行程",
+      "kind": "step",
+      "actor": "edit",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "Flow C — Multi-device pre-trip：桌面 browser fill itinerary / expenses / notes。",
+      "statutory": "local CRUD",
+      "source": "research §5 Flow C",
+      "x": 680,
+      "y": 40
+    },
+    {
+      "id": "JC2",
+      "flow": "journey",
+      "code": "C-02",
+      "title": "▾ 我的行程 sheet",
+      "kind": "step",
+      "actor": "edit",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "Tap brand title ▾ → trip switcher。",
+      "statutory": "trip switcher",
+      "source": "research §5 Flow C",
+      "x": 680,
+      "y": 200
+    },
+    {
+      "id": "JC3",
+      "flow": "journey",
+      "code": "C-03",
+      "title": "🔗 分享 → cloudCreate",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "警告『邀請連結 = 永久通行證』→ 設 displayName → Firebase anon signin → upload trip → 取 tripId。",
+      "statutory": "cloudCreate()",
+      "source": "research §5 Flow C",
+      "x": 680,
+      "y": 360
+    },
+    {
+      "id": "JC4",
+      "flow": "journey",
+      "code": "C-04",
+      "title": "📋 Copy capability URL",
+      "kind": "terminal",
+      "actor": "sync",
+      "system": "External",
+      "conf": "verified",
+      "desc": "`fukuoka.wicalyu.com/#t=<tripId>` 寫入 clipboard → 主公 paste WhatsApp 比 partner。",
+      "statutory": "navigator.clipboard",
+      "source": "research §5 Flow C",
+      "x": 680,
+      "y": 520
+    },
+    {
+      "id": "JC5",
+      "flow": "journey",
+      "code": "C-05",
+      "title": "📱 Partner 開 link → join",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "URL fragment → 提示 displayName → 加入 members → onSnapshot 訂閱 → toast 提示。",
+      "statutory": "join flow",
+      "source": "research §5 Flow C",
+      "x": 680,
+      "y": 680
+    },
+    {
+      "id": "JD1",
+      "flow": "journey",
+      "code": "D-01",
+      "title": "🍱 食飯時開 同行 tab",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "Flow D — On-trip：兩人喺餐廳，partner 開 💬 同行。",
+      "statutory": "chat tab",
+      "source": "research §5 Flow D",
+      "x": 980,
+      "y": 40
+    },
+    {
+      "id": "JD2",
+      "flow": "journey",
+      "code": "D-02",
+      "title": "💬 發訊息 + 📎 圖",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "Type text → attach photo → 寫 Firestore chat doc → onSnapshot 兩邊 render。",
+      "statutory": "chat write",
+      "source": "research §5 Flow D",
+      "x": 980,
+      "y": 200
+    },
+    {
+      "id": "JD3",
+      "flow": "journey",
+      "code": "D-03",
+      "title": "📊 創 poll『夜景投票』",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "Question + 3 options。寫 Firestore polls doc。",
+      "statutory": "poll create",
+      "source": "research §5 Flow D",
+      "x": 980,
+      "y": 360
+    },
+    {
+      "id": "JD4",
+      "flow": "journey",
+      "code": "D-04",
+      "title": "🗳️ 雙方投票",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "runTransaction → opts[i].by 加 uid → bar chart 即時 update。",
+      "statutory": "vote runTransaction",
+      "source": "research §5 Flow D",
+      "x": 980,
+      "y": 520
+    },
+    {
+      "id": "JD5",
+      "flow": "journey",
+      "code": "D-05",
+      "title": "☀️ 翌晨 行程 tab",
+      "kind": "terminal",
+      "actor": "view",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "Auto-jump 今日 → hotel widget sticky → 繼續行程。",
+      "statutory": "auto-jump",
+      "source": "research §5 Flow D",
+      "x": 980,
+      "y": 680
+    },
+    {
+      "id": "D1",
+      "flow": "data",
+      "code": "D-01",
+      "title": "📓 Trip",
+      "kind": "step",
+      "actor": "view",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "{id, title, start, end, rate, hotel:{name,addr,tel,stations[]}, days[], exp[], links[], pack[], cloud?:cloudTripId}",
+      "statutory": "SEED structure",
+      "source": "research §4",
+      "x": 540,
+      "y": 40
+    },
+    {
+      "id": "D2",
+      "flow": "data",
+      "code": "D-02",
+      "title": "📆 Day",
+      "kind": "step",
+      "actor": "view",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "{date YYYY-MM-DD, title (主題), items: Stop[]}",
+      "statutory": "trip.days[]",
+      "source": "research §4",
+      "x": 260,
+      "y": 200
+    },
+    {
+      "id": "D3",
+      "flow": "data",
+      "code": "D-03",
+      "title": "📍 Stop",
+      "kind": "step",
+      "actor": "view",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "{id, time, name, kind:'fly|move|food|spot', loc, cost JPY, cur:'JPY', info, done, photos: dataURL[]}",
+      "statutory": "day.items[]",
+      "source": "research §4",
+      "x": 260,
+      "y": 380
+    },
+    {
+      "id": "D4",
+      "flow": "data",
+      "code": "D-04",
+      "title": "💴 Expense (manual)",
+      "kind": "step",
+      "actor": "view",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "{id, name, amt JPY, date YYYY-MM-DD}",
+      "statutory": "trip.exp[]",
+      "source": "research §4",
+      "x": 540,
+      "y": 380
+    },
+    {
+      "id": "D5",
+      "flow": "data",
+      "code": "D-05",
+      "title": "🔗 Link",
+      "kind": "step",
+      "actor": "view",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "{id, label, url}",
+      "statutory": "trip.links[]",
+      "source": "research §4",
+      "x": 820,
+      "y": 380
+    },
+    {
+      "id": "D6",
+      "flow": "data",
+      "code": "D-06",
+      "title": "🧳 PackItem",
+      "kind": "step",
+      "actor": "view",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "{id, t (text), d (done bool)}",
+      "statutory": "trip.pack[]",
+      "source": "research §4",
+      "x": 1100,
+      "y": 380
+    },
+    {
+      "id": "D7",
+      "flow": "data",
+      "code": "D-07",
+      "title": "👤 User (collab)",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "{displayName (≤40), uid:firebase anon}。localStorage `fk2_me`。",
+      "statutory": "fk2_me",
+      "source": "research §4",
+      "x": 540,
+      "y": 580
+    },
+    {
+      "id": "D8",
+      "flow": "data",
+      "code": "D-08",
+      "title": "💬 ChatMsg",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "{uid, name, text ≤800, img? base64, ts server timestamp}",
+      "statutory": "trips/{tripId}/chat/{msgId}",
+      "source": "research §4",
+      "x": 260,
+      "y": 760
+    },
+    {
+      "id": "D9",
+      "flow": "data",
+      "code": "D-09",
+      "title": "📊 Poll",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "{q ≤200, opts:[{t, by:[uid]}], by:creator name, ts}",
+      "statutory": "trips/{tripId}/polls/{pollId}",
+      "source": "research §4",
+      "x": 540,
+      "y": 760
+    },
+    {
+      "id": "DS1",
+      "flow": "data",
+      "code": "D-S1",
+      "title": "💾 localStorage",
+      "kind": "terminal",
+      "actor": "view",
+      "system": "Local",
+      "conf": "verified",
+      "desc": "Keys: fk2_idx (trip registry) · fk2_t:<id> (trip data) · fk2_act (active trip id) · fk2_me · fk2_edit",
+      "statutory": "localStorage scan",
+      "source": "research §4",
+      "x": 820,
+      "y": 580
+    },
+    {
+      "id": "DS2",
+      "flow": "data",
+      "code": "D-S2",
+      "title": "☁️ Firestore",
+      "kind": "terminal",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "Project fukuoka-techo。Collections: trips/{tripId} (metadata + members)、/state/{section} (snapshot)、/chat、/polls。Real-time via onSnapshot。",
+      "statutory": "firestore project",
+      "source": "research §4",
+      "x": 1100,
+      "y": 580
+    },
+    {
+      "id": "DS3",
+      "flow": "data",
+      "code": "D-S3",
+      "title": "🛡 Firestore Rules",
+      "kind": "note",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "legal",
+      "desc": "F1/F4/F5/F6 deployed。Join 需有效 tripId、member-gated read、createdBy immutable、state doc 只有 members 可寫。Lucy-verified per HANDOFF。",
+      "statutory": "firestore.rules",
+      "source": "HANDOFF §4 / Lucy review",
+      "x": 1100,
+      "y": 760
+    },
+    {
+      "id": "S1",
+      "flow": "sync",
+      "code": "S-01",
+      "title": "🪪 rid() — 20-char unguessable",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Mem",
+      "conf": "verified",
+      "desc": "crypto.randomUUID()-ish base36，做 cloud tripId 同時做 capability secret。",
+      "statutory": "rid() helper",
+      "source": "research §6",
+      "x": 180,
+      "y": 40
+    },
+    {
+      "id": "S2",
+      "flow": "sync",
+      "code": "S-02",
+      "title": "🔗 Capability URL `#t=<tripId>`",
+      "kind": "step",
+      "actor": "sync",
+      "system": "External",
+      "conf": "verified",
+      "desc": "Fragment（非 query string）= no Referer leak。畀任何人有 link 就可 join，無第二層 token。",
+      "statutory": "URL fragment in index.html",
+      "source": "research §6 capability-URL",
+      "x": 460,
+      "y": 40
+    },
+    {
+      "id": "S3",
+      "flow": "sync",
+      "code": "S-03",
+      "title": "🔥 Firebase anon signin",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "Open shared link → signInAnonymously() → uid 入 members。Deferred load 到 user click 分享/join 先 fetch SDK。",
+      "statutory": "Firebase auth",
+      "source": "research §6",
+      "x": 740,
+      "y": 40
+    },
+    {
+      "id": "S4",
+      "flow": "sync",
+      "code": "S-04",
+      "title": "➕ 加入 members[]",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "首次 join：updateDoc + arrayUnion uid。Rule F5 enforce 只可加自己。",
+      "statutory": "trips/{tripId}.members",
+      "source": "research §6",
+      "x": 1020,
+      "y": 40
+    },
+    {
+      "id": "S5",
+      "flow": "sync",
+      "code": "S-05",
+      "title": "👂 onSnapshot 訂閱",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "Subscribe /state/itinerary /state/expenses /state/packing /state/meta + /chat + /polls。Server snapshot → diff → state update → re-render。",
+      "statutory": "index.html:569-575",
+      "source": "research §6",
+      "x": 180,
+      "y": 260
+    },
+    {
+      "id": "S6",
+      "flow": "sync",
+      "code": "S-06",
+      "title": "✍️ Diff-based 寫入",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "_sent tracker 記低 last serialized；只有 changed section 寫 Firestore，慳寫入。",
+      "statutory": "index.html:562-564",
+      "source": "research §6",
+      "x": 460,
+      "y": 260
+    },
+    {
+      "id": "S7",
+      "flow": "sync",
+      "code": "S-07",
+      "title": "🗂 SECT = [itinerary, expenses, packing, meta]",
+      "kind": "note",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "4 個 section doc，避免一個 doc 太大；分 doc 都可降低 conflict。",
+      "statutory": "index.html:532-537",
+      "source": "research §6",
+      "x": 740,
+      "y": 260
+    },
+    {
+      "id": "S8",
+      "flow": "sync",
+      "code": "S-08",
+      "title": "🔄 runTransaction (vote)",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "Poll vote 用 transaction：read → 加 uid → write。避免併發踩 conflict 漏票。",
+      "statutory": "poll vote handler",
+      "source": "research §3 feature 21",
+      "x": 1020,
+      "y": 260
+    },
+    {
+      "id": "S9",
+      "flow": "sync",
+      "code": "S-09",
+      "title": "📶 Offline detect",
+      "kind": "decision",
+      "actor": "offline",
+      "system": "Mem",
+      "conf": "verified",
+      "desc": "navigator.onLine + Firestore connection state。離線出 .cbn banner『改動會喺有網時自動上傳』。",
+      "statutory": "index.html:559-565",
+      "source": "research §6",
+      "x": 180,
+      "y": 480
+    },
+    {
+      "id": "S10",
+      "flow": "sync",
+      "code": "S-10",
+      "title": "🚥 Sync state pill (.pres)",
+      "kind": "step",
+      "actor": "view",
+      "system": "Mem",
+      "conf": "verified",
+      "desc": "Dot color：綠 #9be8d8 = synced / 黃 #ffd479 = syncing + pulse / 紅 #f0865a = offline / 灰 = local-only。",
+      "statutory": "index.html:49-52",
+      "source": "research §6",
+      "x": 460,
+      "y": 480
+    },
+    {
+      "id": "S11",
+      "flow": "sync",
+      "code": "S-11",
+      "title": "🌐 Reconnect → auto-sync",
+      "kind": "step",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "navigator online → Firestore re-establish → 累積嘅 local edits flush 上 cloud → toast『☁️ 行程已更新』。",
+      "statutory": "online event listener",
+      "source": "research §6",
+      "x": 740,
+      "y": 480
+    },
+    {
+      "id": "S12",
+      "flow": "sync",
+      "code": "S-12",
+      "title": "♻️ Reshare → new tripId",
+      "kind": "decision",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "verified",
+      "desc": "重新 cloudCreate() → 舊 tripId 仍存 Firestore（無 delete）；rule 上不再為 members → 等同 revoke 但唔真係刪。",
+      "statutory": "reshare in HANDOFF",
+      "source": "HANDOFF §reshare",
+      "x": 180,
+      "y": 700
+    },
+    {
+      "id": "S13",
+      "flow": "sync",
+      "code": "S-13",
+      "title": "🛡 Firestore Rules F1/F4/F5/F6",
+      "kind": "terminal",
+      "actor": "sync",
+      "system": "Cloud",
+      "conf": "legal",
+      "desc": "F1 createdBy immutable / F4 only members read / F5 join self-only / F6 state writable only by members。Lucy-verified。",
+      "statutory": "firestore.rules",
+      "source": "HANDOFF Lucy review",
+      "x": 460,
+      "y": 700
+    },
+    {
+      "id": "S14",
+      "flow": "sync",
+      "code": "S-14",
+      "title": "⚠️ 已知 gap (HANDOFF)",
+      "kind": "note",
+      "actor": "sync",
+      "system": "External",
+      "conf": "to_verify",
+      "desc": "Reshare 唔真係 revoke 舊 tripId；無 token rotation；無 audit log。屬 capability-URL trust model 自身限制。",
+      "statutory": "HANDOFF §gap",
+      "source": "HANDOFF §gap",
+      "x": 740,
+      "y": 700
+    }
+  ],
+  "edges": [
+    {
+      "f": "PG1",
+      "t": "PG2"
+    },
+    {
+      "f": "PG1",
+      "t": "PG3"
+    },
+    {
+      "f": "PG1",
+      "t": "PG4"
+    },
+    {
+      "f": "PG1",
+      "t": "PG5"
+    },
+    {
+      "f": "PG1",
+      "t": "PG6"
+    },
+    {
+      "f": "PG1",
+      "t": "PG7"
+    },
+    {
+      "f": "PG1",
+      "t": "PG8"
+    },
+    {
+      "f": "PG1",
+      "t": "PG9"
+    },
+    {
+      "f": "PG5",
+      "t": "PG10",
+      "l": "tap edit"
+    },
+    {
+      "f": "PG2",
+      "t": "PG11",
+      "l": "▾"
+    },
+    {
+      "f": "PG2",
+      "t": "PG12",
+      "l": "⚙️"
+    },
+    {
+      "f": "PG2",
+      "t": "PG10",
+      "l": "✎ toggle"
+    },
+    {
+      "f": "F1",
+      "t": "F2",
+      "l": "photo"
+    },
+    {
+      "f": "F1",
+      "t": "F3",
+      "l": "loc → maps"
+    },
+    {
+      "f": "F1",
+      "t": "F4",
+      "l": "done"
+    },
+    {
+      "f": "F1",
+      "t": "F6",
+      "l": "cost"
+    },
+    {
+      "f": "F6",
+      "t": "F7",
+      "l": "+ manual"
+    },
+    {
+      "f": "F6",
+      "t": "F8",
+      "l": "× rate"
+    },
+    {
+      "f": "F11",
+      "t": "F13",
+      "l": "needs share"
+    },
+    {
+      "f": "F12",
+      "t": "F13",
+      "l": "needs share"
+    },
+    {
+      "f": "JA1",
+      "t": "JA2"
+    },
+    {
+      "f": "JA2",
+      "t": "JA3"
+    },
+    {
+      "f": "JA3",
+      "t": "JA4"
+    },
+    {
+      "f": "JB1",
+      "t": "JB2"
+    },
+    {
+      "f": "JB2",
+      "t": "JB3"
+    },
+    {
+      "f": "JB3",
+      "t": "JB4"
+    },
+    {
+      "f": "JC1",
+      "t": "JC2"
+    },
+    {
+      "f": "JC2",
+      "t": "JC3"
+    },
+    {
+      "f": "JC3",
+      "t": "JC4"
+    },
+    {
+      "f": "JC4",
+      "t": "JC5"
+    },
+    {
+      "f": "JD1",
+      "t": "JD2"
+    },
+    {
+      "f": "JD2",
+      "t": "JD3"
+    },
+    {
+      "f": "JD3",
+      "t": "JD4"
+    },
+    {
+      "f": "JD4",
+      "t": "JD5"
+    },
+    {
+      "f": "D1",
+      "t": "D2",
+      "l": "days[]"
+    },
+    {
+      "f": "D2",
+      "t": "D3",
+      "l": "items[]"
+    },
+    {
+      "f": "D1",
+      "t": "D4",
+      "l": "exp[]"
+    },
+    {
+      "f": "D1",
+      "t": "D5",
+      "l": "links[]"
+    },
+    {
+      "f": "D1",
+      "t": "D6",
+      "l": "pack[]"
+    },
+    {
+      "f": "D1",
+      "t": "D7",
+      "l": "members"
+    },
+    {
+      "f": "D1",
+      "t": "D8",
+      "l": "chat"
+    },
+    {
+      "f": "D1",
+      "t": "D9",
+      "l": "polls"
+    },
+    {
+      "f": "D1",
+      "t": "DS1",
+      "l": "stored in"
+    },
+    {
+      "f": "D8",
+      "t": "DS2",
+      "l": "stored in"
+    },
+    {
+      "f": "D9",
+      "t": "DS2",
+      "l": "stored in"
+    },
+    {
+      "f": "DS2",
+      "t": "DS3",
+      "l": "gated by"
+    },
+    {
+      "f": "S1",
+      "t": "S2",
+      "l": "→ #t="
+    },
+    {
+      "f": "S2",
+      "t": "S3",
+      "l": "trigger signin"
+    },
+    {
+      "f": "S3",
+      "t": "S4",
+      "l": "arrayUnion"
+    },
+    {
+      "f": "S4",
+      "t": "S5",
+      "l": "subscribe"
+    },
+    {
+      "f": "S5",
+      "t": "S7",
+      "l": "split into"
+    },
+    {
+      "f": "S6",
+      "t": "S7",
+      "l": "writes to"
+    },
+    {
+      "f": "S5",
+      "t": "S6",
+      "l": "triggers"
+    },
+    {
+      "f": "S8",
+      "t": "S6",
+      "l": "commit"
+    },
+    {
+      "f": "S9",
+      "t": "S10",
+      "l": "color"
+    },
+    {
+      "f": "S9",
+      "t": "S11",
+      "l": "reconnect"
+    },
+    {
+      "f": "S2",
+      "t": "S12",
+      "l": "reshare"
+    },
+    {
+      "f": "S12",
+      "t": "S13",
+      "l": "gated by"
+    },
+    {
+      "f": "S13",
+      "t": "S14",
+      "l": "known gap"
+    }
+  ]
+}
