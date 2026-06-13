@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f4c45">
+<title>福岡音樂之夜 · 6/19 Live House 全晚實況</title>
+<style>
+  :root{
+    color-scheme: light dark;
+    --bg:#f6f3ec; --paper:#fffdf8; --line:#e6dfce; --ink:#23201a; --mut:#7c7464;
+    --acc:#0f6b5f; --acc2:#15897a; --acc-soft:#dff0eb; --gold:#c8902a; --gold-soft:#f6ead0;
+    --warn:#b9761b; --now:#c2451d;
+    --sh:0 1px 2px rgba(40,32,20,.06),0 10px 28px rgba(40,32,20,.07);
+    --sb:env(safe-area-inset-bottom,0px); --st:env(safe-area-inset-top,0px);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#15140f; --paper:#1d1b15; --line:#322d22; --ink:#efe9da; --mut:#9b9079;
+    --acc:#3fb9a6; --acc2:#52cdb9; --acc-soft:#16302b; --gold:#e0b35e; --gold-soft:#352b16;
+    --warn:#e0b35e; --now:#f0865a;
+    --sh:0 1px 2px rgba(0,0,0,.45),0 10px 28px rgba(0,0,0,.4);
+  }}
+  *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--bg);color:var(--ink);
+    font-family:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+    -webkit-text-size-adjust:100%;line-height:1.6}
+  body{min-height:100dvh;padding-bottom:calc(28px + var(--sb));
+    background-image:radial-gradient(rgba(120,100,60,.045) 1px,transparent 1px),linear-gradient(180deg,rgba(180,150,90,.05),transparent 260px);
+    background-size:18px 18px,100% 100%}
+  @media (prefers-color-scheme:dark){body{background-image:radial-gradient(rgba(255,230,170,.035) 1px,transparent 1px),linear-gradient(180deg,rgba(255,210,140,.04),transparent 260px)}}
+
+  header{position:relative;color:#fff;padding:calc(var(--st) + 26px) 20px 26px;
+    background:linear-gradient(180deg,var(--acc) 0%,var(--acc2) 100%);border-radius:0 0 26px 26px;box-shadow:var(--sh);
+    background-image:linear-gradient(180deg,var(--acc),var(--acc2)),repeating-linear-gradient(45deg,rgba(255,255,255,.05) 0 2px,transparent 2px 6px);
+    background-blend-mode:overlay;overflow:hidden}
+  header::before{content:"";position:absolute;right:-34px;top:-34px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.08)}
+  .kicker{font-size:11px;font-weight:800;letter-spacing:3px;opacity:.85}
+  header h1{font-size:26px;font-weight:800;letter-spacing:.3px;margin:6px 0 0;line-height:1.2}
+  header h1 .em{font-size:30px}
+  .when{display:inline-flex;align-items:center;gap:7px;margin-top:12px;background:rgba(255,255,255,.2);
+    padding:7px 13px;border-radius:999px;font-size:13px;font-weight:700}
+  .sub{font-size:12.5px;opacity:.9;margin-top:10px;line-height:1.5}
+
+  main{max-width:680px;margin:0 auto;padding:18px 16px 0}
+  .plan{background:var(--gold-soft);border:1px solid var(--line);border-left:4px solid var(--gold);
+    border-radius:16px;padding:15px 16px;margin-bottom:18px;box-shadow:var(--sh)}
+  .plan .t{font-size:12px;font-weight:800;color:var(--warn);letter-spacing:.5px}
+  .plan p{font-size:14px;margin-top:6px;line-height:1.6}
+  .plan b{color:var(--acc)}
+
+  .sech{display:flex;align-items:baseline;gap:9px;margin:6px 2px 12px}
+  .sech .n{font-size:18px;font-weight:800}
+  .sech .c{font-size:11.5px;color:var(--mut);font-weight:700}
+
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:16px;
+    margin-bottom:14px;box-shadow:var(--sh);background-image:linear-gradient(180deg,rgba(255,255,255,.5),transparent 60%);
+    position:relative;overflow:hidden}
+  @media (prefers-color-scheme:dark){.card{background-image:linear-gradient(180deg,rgba(255,255,255,.03),transparent 60%)}}
+  .card .rank{position:absolute;top:13px;right:14px;font-size:11px;font-weight:900;color:var(--mut);
+    border:1.5px solid var(--line);border-radius:7px;padding:2px 7px;letter-spacing:1px}
+  .card.pick{border-color:var(--acc);border-width:1.5px}
+  .card.pick::after{content:"主推";position:absolute;top:13px;right:14px;font-size:10.5px;font-weight:900;color:#fff;
+    background:var(--acc);border-radius:7px;padding:3px 8px;letter-spacing:2px}
+  .act{font-size:18px;font-weight:800;line-height:1.3;padding-right:54px}
+  .tour{font-size:12.5px;color:var(--mut);margin-top:2px}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 12px}
+  .tag{font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;background:var(--acc-soft);color:var(--acc)}
+  .tag.g{background:var(--gold-soft);color:var(--warn)}
+  .tag.r{background:color-mix(in srgb,var(--now) 14%,transparent);color:var(--now)}
+  .meta{display:grid;grid-template-columns:auto 1fr;gap:6px 11px;font-size:13px;margin-bottom:13px}
+  .meta .k{color:var(--mut);font-weight:700;white-space:nowrap}
+  .meta .v{font-weight:600;word-break:break-word}
+  .meta .v b{color:var(--acc)}
+  .btns{display:flex;gap:8px;flex-wrap:wrap}
+  .btns a{flex:1;min-width:120px;text-align:center;font-size:12.5px;font-weight:800;padding:10px 12px;
+    border-radius:11px;text-decoration:none;border:1px solid var(--line);color:var(--ink);background:var(--bg)}
+  .btns a.pri{background:var(--acc);color:#fff;border-color:var(--acc)}
+
+  .jazz{background:linear-gradient(135deg,var(--acc-soft),transparent);border:1px solid var(--acc);
+    border-radius:16px;padding:15px 16px;margin:6px 0 18px;box-shadow:var(--sh)}
+  .jazz .t{font-size:15px;font-weight:800;color:var(--acc)}
+  .jazz p{font-size:13px;margin-top:5px}
+  .jazz a{display:inline-block;margin-top:10px;font-size:12.5px;font-weight:800;color:#fff;background:var(--acc);
+    padding:9px 15px;border-radius:999px;text-decoration:none}
+
+  .none{font-size:12.5px;color:var(--mut);background:var(--paper);border:1px dashed var(--line);
+    border-radius:13px;padding:12px 14px;margin-bottom:18px;line-height:1.6}
+  .none b{color:var(--ink)}
+
+  .links{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:16px;box-shadow:var(--sh)}
+  .links .t{font-size:13px;font-weight:800;color:var(--acc);margin-bottom:8px}
+  .links a{display:block;font-size:13.5px;font-weight:700;color:var(--acc);text-decoration:none;
+    padding:9px 0;border-bottom:1px solid var(--line)}
+  .links a:last-child{border-bottom:0}
+  .links a span{color:var(--mut);font-weight:600;font-size:11.5px}
+
+  .tip{font-size:12px;color:var(--mut);background:var(--gold-soft);border:1px solid var(--line);
+    border-radius:12px;padding:11px 13px;margin-bottom:16px;line-height:1.65}
+  footer{text-align:center;color:var(--mut);font-size:11px;padding:14px 18px 8px;line-height:1.7}
+  footer b{color:var(--ink)}
+</style>
+</head>
+<body>
+<header>
+  <div class="kicker">FUKUOKA · 旅遊手帳 音樂特輯</div>
+  <h1><span class="em">🎵</span> 福岡音樂之夜</h1>
+  <div class="when">📅 6/19（週五）· Live House 全晚實況</div>
+  <div class="sub">天神・大名・中洲 ── 九州 live house 重鎮，由酒店（渡辺通／天神南）行得到。以下五場已逐場核實。</div>
+</header>
+
+<main>
+  <div class="plan">
+    <div class="t">🎯 一個人玩法（rock + jazz 一晚通殺）</div>
+    <p><b>18:30 入 OP's 睇 MADDOGS</b>（五團輪番、企位、性價比高）→ 散場 <b>過中洲 Trombone Club</b> 聽 21:00／22:00 兩 set 生爵士。一晚體驗到日本 live house 同 jazz bar 兩種現場文化。</p>
+  </div>
+
+  <div class="sech"><span class="n">🎸 五場演出</span><span class="c">已逐場核實 · 2026-06-14</span></div>
+
+  <!-- 1 -->
+  <div class="card pick">
+    <div class="act">ミニマムジーク</div>
+    <div class="tour">『六季』hiA tour ・ ＋ ammo／SHE'llSLEEP</div>
+    <div class="tags"><span class="tag">indie rock</span><span class="tag">細場・人貼人</span><span class="tag g">有飛</span></div>
+    <div class="meta">
+      <span class="k">場地</span><span class="v">LIVE HOUSE <b>Queblick</b></span>
+      <span class="k">地址</span><span class="v">福岡市中央区大名2-6-39 ジラソーレビルB1F（赤坂駅5番出口徒步1分）</span>
+      <span class="k">時間</span><span class="v">開場／開演待官方公佈</span>
+    </div>
+    <div class="btns">
+      <a class="pri" href="https://www.google.com/maps/search/?api=1&query=Queblick%20%E5%A4%A7%E5%90%8D2-6-39">🧭 導航</a>
+      <a href="https://queblick.com/">官網查飛</a>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="card pick">
+    <div class="act">MADDOGS</div>
+    <div class="tour">＋ CULTURES!!! ／ Halujio ／ atelier room ／ Mercy Woodpecker</div>
+    <div class="tags"><span class="tag">rock</span><span class="tag">五團企位</span><span class="tag g">有飛</span></div>
+    <div class="meta">
+      <span class="k">場地</span><span class="v">LIVE HOUSE <b>OP's</b>（大名一帶）</span>
+      <span class="k">時間</span><span class="v"><b>OPEN 18:00 / START 18:30</b></span>
+    </div>
+    <div class="btns">
+      <a class="pri" href="https://www.google.com/maps/search/?api=1&query=LIVE%20HOUSE%20OPs%20%E7%A6%8F%E5%B2%A1%20%E5%A4%A7%E5%90%8D">🧭 導航</a>
+      <a href="https://op-s.info/schedule/">官網 schedule</a>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="card">
+    <div class="rank">03</div>
+    <div class="act">Chappo（シャッポ）</div>
+    <div class="tour">tour『よろしくどうぞ！』</div>
+    <div class="tags"><span class="tag">J-pop / rock</span><span class="tag g">受付中</span></div>
+    <div class="meta">
+      <span class="k">場地</span><span class="v">the <b>voodoo lounge</b>（中央区）</span>
+      <span class="k">時間</span><span class="v"><b>OPEN 18:30 / START 19:00</b></span>
+    </div>
+    <div class="btns">
+      <a class="pri" href="https://www.google.com/maps/search/?api=1&query=the%20voodoo%20lounge%20%E7%A6%8F%E5%B2%A1">🧭 導航</a>
+      <a href="https://voodoolounge.jp/">官網</a>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="card">
+    <div class="rank">04</div>
+    <div class="act">Neighbors Complain</div>
+    <div class="tour">Tour 2026『Street Story.』</div>
+    <div class="tags"><span class="tag">funk / soul / R&B</span><span class="tag">最易入口</span><span class="tag g">有飛</span></div>
+    <div class="meta">
+      <span class="k">場地</span><span class="v"><b>INSA</b>（老牌 club）</span>
+      <span class="k">地址</span><span class="v">福岡市中央区春吉3-5-7 B1</span>
+      <span class="k">時間</span><span class="v">開場／開演待官方公佈</span>
+    </div>
+    <div class="btns">
+      <a class="pri" href="https://www.google.com/maps/search/?api=1&query=INSA%20%E7%A6%8F%E5%B2%A1%20%E6%98%A5%E5%90%893-5-7">🧭 導航</a>
+      <a href="https://neighbors-complain.com/live/">巡演日程</a>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="card">
+    <div class="rank">05</div>
+    <div class="act">WANIMA</div>
+    <div class="tour">2026 TOUR『Excuse Error』</div>
+    <div class="tags"><span class="tag">punk / ska 大團</span><span class="tag r">大場・要早買飛</span></div>
+    <div class="meta">
+      <span class="k">場地</span><span class="v"><b>福岡サンパレス</b> ホテル&ホール（博多区築港本町）</span>
+      <span class="k">時間</span><span class="v"><b>OPEN 17:30 / START 18:30</b></span>
+      <span class="k">售票</span><span class="v">2025-11-29 已開賣（大場，多數近滿）</span>
+    </div>
+    <div class="btns">
+      <a class="pri" href="https://www.google.com/maps/search/?api=1&query=%E7%A6%8F%E5%B2%A1%E3%82%B5%E3%83%B3%E3%83%91%E3%83%AC%E3%82%B9">🧭 導航</a>
+      <a href="https://wanima.net/">官方查飛</a>
+    </div>
+  </div>
+
+  <!-- jazz add-on -->
+  <div class="jazz">
+    <div class="t">🎷 散場收尾 · 中洲爵士</div>
+    <p><b>Trombone Club</b>（博多区中洲5-3-21 2F）每晚生爵士 <b>21:00 & 22:00</b> 兩 set，charge ¥1000＋drink ¥1000 起，唔使預約。看完 live house 散場啱啱好過去。</p>
+    <a href="https://www.google.com/maps/search/?api=1&query=JAZZ%20BAR%20Trombone%20Club%20%E4%B8%AD%E6%B4%B2">🧭 導航 Trombone Club</a>
+  </div>
+
+  <div class="none">❌ <b>當晚確認冇公開 show</b>：DRUM LOGOS ／ DRUM Be-1 ／ BEAT STATION ／ Kieth Flack（均不在 6/19 福岡演出表內）。</div>
+
+  <div class="links">
+    <div class="t">🔗 買飛 / 查實時間票價</div>
+    <a href="https://eplus.jp/sf/venue/kyushu-okinawa/fukuoka/fukuoka">eplus 福岡 live house <span>· 售票平台</span></a>
+    <a href="https://t.livepocket.jp/area/fukuoka">LivePocket 福岡 <span>· 售票平台</span></a>
+    <a href="https://www.livefans.jp/">LiveFans <span>· 演出/setlist 查詢</span></a>
+  </div>
+
+  <div class="tip">
+    💡 <b>落手前提</b>：日本 live house 多數要 <b>+1 drink（約 ¥600–700）</b>，飛價 ADV／DOOR 分開；細場好多只收現金，記得帶夠。當晚 lineup／時間以場地 Instagram 或售票頁為準。<br>
+    ※ 天神 live circuit『TENJIN ONTAQ』係每年 3 月，今次行程冇份。
+  </div>
+
+  <footer>
+    福岡・九州 旅遊手帳 · 🎵 音樂特輯 · 6/19 實況<br>
+    資料核實日 <b>2026-06-14</b> · 來源：bushikaku／eplus／LivePocket／各場與演出者官方<br>
+    同步整合喺手帳 <b>fukuoka.wicalyu.com</b>（6/15 爵士之夜 · 6/19 live house）
+  </footer>
+</main>
+</body>
+</html>

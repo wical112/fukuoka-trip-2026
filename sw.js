@@ -1,9 +1,9 @@
 /* 福岡旅遊手帳 — service worker
    App shell precache → 第二次起離線即開。資料係 localStorage，唔經 SW。
    改 code 後一定要 bump VERSION，否則 PWA 用戶食 cache 舊版。 */
-const VERSION = "v17-2026-06-14";
+const VERSION = "v18-2026-06-14";
 const SHELL = "shell-" + VERSION;
-const URLS = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
+const URLS = ["./", "./index.html", "./music.html", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(SHELL).then(c => c.addAll(URLS))
